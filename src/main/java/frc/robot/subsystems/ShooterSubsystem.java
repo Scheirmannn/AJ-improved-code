@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.security.Key;
 import java.util.function.DoubleSupplier;
 
 import com.revrobotics.PersistMode;
@@ -46,7 +47,7 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterRPMMap.put(2.4, 4000.0);
         shooterRPMMap.put(3.0, 4250.0);
         shooterRPMMap.put(4.0, 4600.0);
-        shooterRPMMap.put(5.0, 5300.0);
+        shooterRPMMap.put(5.0, 5500.0);
 
         //Distance(meters) -> backroller power
         //Tune the ratio between shooter and backroller to shape the shot arc
@@ -54,8 +55,8 @@ public class ShooterSubsystem extends SubsystemBase {
         backrollerRPMMap.put(1.04, 5500.0); //eqaul at close range = flatter arc
         backrollerRPMMap.put(2.4, 5000.0); 
         backrollerRPMMap.put(3.0, 5000.0);
-        backrollerRPMMap.put(4.0, 3000.0);
-        backrollerRPMMap.put(5.0, 3200.0);   
+        backrollerRPMMap.put(4.0, 4500.0);
+        backrollerRPMMap.put(5.0, 4500.0);   
     }
     
 
@@ -95,14 +96,29 @@ public class ShooterSubsystem extends SubsystemBase {
             //Clamp distance to table bouds so it doesnt extrapolate wildly
             dist = Math.max(1.0, Math.min(5.0, dist));
 
-            //double shooterRPM = shooterRPMMap.get(dist);
+            //Shot selection label for dashboard
+            String shotLabel;
+            if (dist < 1.7) {
+                shotLabel = "Close";
+            } else if (dist < 2.7) {
+                shotLabel = "Mid-Close";
+            } else if (dist < 3.5) {
+                shotLabel = "Mid";
+            } else if (dist < 4.5) {
+                shotLabel = "Mid-Far";
+            } else {
+                shotLabel = "Far";
+            }
+            SmartDashboard.putString("Shot Selection", shotLabel);
+            
+            double shooterRPM = shooterRPMMap.get(dist);
             double backrollerRPM = backrollerRPMMap.get(dist);
 
-            //setShooterRPM(shooterRPM);
+            setShooterRPM(shooterRPM);
             setBackRollerRPM(backrollerRPM);
 
             SmartDashboard.putNumber("Shooter/Distance (m)", dist);
-            //SmartDashboard.putNumber("Shooter/Flywheel RPM", shooterRPM);
+            SmartDashboard.putNumber("Shooter/Flywheel RPM", shooterRPM);
             SmartDashboard.putNumber("Shooter/Backroller RPM", backrollerRPM);
         }).finallyDo(interrupted -> stopAll()).withName("Shoot");
     }
@@ -112,8 +128,8 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command shootFixedCommand() {
         return this.startEnd(
             () -> {
-                setShooterRPM(4000);
-                setBackRollerRPM(5000);
+                setShooterRPM(5500);
+                setBackRollerRPM(4500);
             }, this::stopAll)
             .withName("Shoot Fixed");
     }

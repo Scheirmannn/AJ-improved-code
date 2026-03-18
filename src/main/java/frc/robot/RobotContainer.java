@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Commands.AlignToTagCommand;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Util.FuelSim;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -50,6 +51,7 @@ public class RobotContainer {
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
   private final Vision vision = new Vision(drivetrain::addVisionMeasurement);
   private final HopperSubsystem hopperSubsystem = new HopperSubsystem();
+  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
   // The driver's controller
  private final XboxController driverController = new XboxController(0);
@@ -155,6 +157,12 @@ public XboxController getDriverController() {
 
     new JoystickButton(opController, XboxController.Button.kA.value)
       .toggleOnTrue(shooterSubsystem.shootFixedCommand());
+
+    new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
+      .onTrue(climberSubsystem.climbUpCommand(2));
+
+    new JoystickButton(opController, XboxController.Button.kRightBumper.value)
+      .onTrue(climberSubsystem.climbDownCommand(5));
 
   //A Button- Allign to Tag 25
   new JoystickButton(driverController, XboxController.Button.kB.value)
