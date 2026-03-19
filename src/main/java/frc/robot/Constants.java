@@ -47,7 +47,7 @@ public final class Constants {
     }
 
     public static final class IndexerSetpoints{
-      public static final double kIndex = -.5;
+      public static final double kIndex = -.4;
     }
   }
   public static final class IntakeSubsystemConstants {
@@ -55,8 +55,8 @@ public final class Constants {
     public static final int kIntakeMotorCanId = 4;
 
     public static final class IntakeSetpoints {
-      public static final double kExtake = .25;
-      public static final double kIntake = -.25;    } //Change values later
+      public static final double kExtake = .6;
+      public static final double kIntake = -.6;    } //Change values later
 
     public static final class PivotSetpoints {
       public static final double kUp = 15; //Tune Arm STOWED

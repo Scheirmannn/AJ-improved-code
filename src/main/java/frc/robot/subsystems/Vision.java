@@ -103,33 +103,33 @@ public class Vision extends SubsystemBase {
       SmartDashboard.putBoolean("Vision/" + prefix + "/Has Targets", result.hasTargets());
 
      
-    if (result.hasTargets()) {
-      SmartDashboard.putNumber("Vision/" + prefix + "/Target Count",
-          result.getTargets().size());
-      SmartDashboard.putNumber("Vision/" + prefix + "/Best Tag ID",
-          result.getBestTarget().getFiducialId());
-    }
+      if (result.hasTargets()) {
+        SmartDashboard.putNumber("Vision/" + prefix + "/Target Count",
+            result.getTargets().size());
+        SmartDashboard.putNumber("Vision/" + prefix + "/Best Tag ID",
+            result.getBestTarget().getFiducialId());
+      }
 
-    if (!result.hasTargets()) return;
+      if (!result.hasTargets()) return;
 
-    Optional<EstimatedRobotPose> estimatedPose = estimator.update(result);
-    if (estimatedPose.isEmpty()) return;
+      Optional<EstimatedRobotPose> estimatedPose = estimator.update(result);
+      if (estimatedPose.isEmpty()) return;
 
-    EstimatedRobotPose pose = estimatedPose.get();
-    Pose2d pose2d = pose.estimatedPose.toPose2d();
+      EstimatedRobotPose pose = estimatedPose.get();
+      Pose2d pose2d = pose.estimatedPose.toPose2d();
 
-    SmartDashboard.putNumber("Vision/" + prefix + "/Pose X",    pose2d.getX());
-    SmartDashboard.putNumber("Vision/" + prefix + "/Pose Y",    pose2d.getY());
-    SmartDashboard.putNumber("Vision/" + prefix + "/Timestamp", pose.timestampSeconds);
-    
+      SmartDashboard.putNumber("Vision/" + prefix + "/Pose X",    pose2d.getX());
+      SmartDashboard.putNumber("Vision/" + prefix + "/Pose Y",    pose2d.getY());
+      SmartDashboard.putNumber("Vision/" + prefix + "/Timestamp", pose.timestampSeconds);
+      
 
-    Matrix<N3, N1> stdDevs = computeStdDevs(pose, estimator);
+      Matrix<N3, N1> stdDevs = computeStdDevs(pose, estimator);
 
-    SmartDashboard.putString("Vision/" + prefix + "/Std Devs",
-        String.format("[%.2f, %.2f, %.2f]",
-            stdDevs.get(0, 0), stdDevs.get(1, 0), stdDevs.get(2, 0)));
+      SmartDashboard.putString("Vision/" + prefix + "/Std Devs",
+          String.format("[%.2f, %.2f, %.2f]",
+              stdDevs.get(0, 0), stdDevs.get(1, 0), stdDevs.get(2, 0)));
 
-    poseConsumer.accept(pose2d, pose.timestampSeconds);
+      poseConsumer.accept(pose2d, pose.timestampSeconds);
   }
 
   

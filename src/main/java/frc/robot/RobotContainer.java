@@ -130,8 +130,6 @@ public XboxController getDriverController() {
     new JoystickButton(driverController, XboxController.Button.kY.value)
       .onTrue(new InstantCommand(() -> drivetrain.zeroHeading()));
 
-      //new JoystickButton(driverController, XboxController.Button.kY.value)
-      //.toggleOnTrue(shooterSubsystem.hoodStowCommand());
 
     new JoystickButton(driverController, XboxController.Button.kLeftBumper.value)
     .onTrue(intakeSubsystem.runUpCommand())
@@ -146,24 +144,28 @@ public XboxController getDriverController() {
             () -> drivetrain.setX(),
             drivetrain));
 
-    new JoystickButton(opController, XboxController.Button.kX.value)
+    new JoystickButton(opController, XboxController.Button.kY.value)
       .toggleOnTrue(intakeSubsystem.runIntakeCommand());
+
 
     new JoystickButton(opController, XboxController.Button.kX.value)
       .toggleOnTrue(hopperSubsystem.rollCommand());
 
-    new JoystickButton(opController, XboxController.Button.kB.value)
+    new JoystickButton(opController, XboxController.Button.kRightBumper.value)
       .toggleOnTrue(shooterSubsystem.shootCommand(() -> vision.getHubDistance()));
 
     new JoystickButton(opController, XboxController.Button.kA.value)
       .toggleOnTrue(shooterSubsystem.shootFixedCommand());
 
-    new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
+    new JoystickButton(opController, XboxController.Button.kB.value)
+      .toggleOnTrue(intakeSubsystem.ejectCommand());
+
+    /*new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
       .onTrue(climberSubsystem.climbUpCommand(2));
 
     new JoystickButton(opController, XboxController.Button.kRightBumper.value)
       .onTrue(climberSubsystem.climbDownCommand(5));
-
+*/
   //A Button- Allign to Tag 25
   new JoystickButton(driverController, XboxController.Button.kB.value)
     .whileTrue(new AlignToTagCommand(drivetrain, vision.getFrontLeftCamera(), vision.getFrontRightCamera(), fieldLayout));

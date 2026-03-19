@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ClimberSubsystem extends SubsystemBase {
-
+/* 
     private final DoubleSolenoid climberSolenoid;
     private final Compressor compressor;
 
@@ -84,5 +84,5 @@ public class ClimberSubsystem extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putBoolean("Is at Pressure", isAtPressure());
     }
-
+*/
 }
