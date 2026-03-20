@@ -8,15 +8,16 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Commands.AlignToTagCommand;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Util.FuelSim;
-import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,18 +32,17 @@ import frc.robot.subsystems.Vision;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
-import choreo.auto.AutoChooser;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 
 
 public class RobotContainer {
-/*
- * This class is where the bulk of the robot should be declared.  Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls).  Instead, the structure of the robot
- * (including subsystems, commands, and button mappings) should be declared here.
- */
+  /*
+  * This class is where the bulk of the robot should be declared.  Since Command-based is a
+  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+  * periodic methods (other than the scheduler calls).  Instead, the structure of the robot
+  * (including subsystems, commands, and button mappings) should be declared here.
+  */
 
   //Dashboard Input
   public FuelSim fuelsim;
@@ -52,38 +52,41 @@ public class RobotContainer {
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
   private final Vision vision = new Vision(drivetrain::addVisionMeasurement);
   private final HopperSubsystem hopperSubsystem = new HopperSubsystem();
-  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+
+  private final Field2d m_field = new Field2d();
 
   private final Autos autos = new Autos(
-    drivetrain, 
-    shooterSubsystem, 
-    hopperSubsystem, 
-    intakeSubsystem
+    drivetrain,
+    shooterSubsystem,
+    hopperSubsystem,
+    intakeSubsystem, 
+    vision
   );
 
   // AUTO CHOOSER
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   // The driver's controller
- private final XboxController driverController = new XboxController(0);
- private final XboxController opController = new XboxController(1);
+  private final XboxController driverController = new XboxController(0);
+  private final XboxController opController = new XboxController(1);
 
   
- // AprilTag field layout for getting tag poses
- private final AprilTagFieldLayout fieldLayout = AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
+  // AprilTag field layout for getting tag poses
+  private final AprilTagFieldLayout fieldLayout = AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
 
- //Field Relativity
- private boolean fieldRelative = true;
+  //Field Relativity
+  private boolean fieldRelative = true;
 
- //Auto stuff
-//private final Autos autos = new Autos(drivetrain, shooterSubsystem, hopperSubsystem, intakeSubsystem, vision);
-//AutoChooser.setDefaultOption("Full Auto", autos.fullAuto());
-//AutoChooser.addOption("Simple Shoot", autos.simpleShootAuto());
-//SmartDashboard.putData("autoChooser", autoChooser);
+  //Auto stuff
+  // private final Autos autos = new Autos(drivetrain);
+  // AutoChooser.setDefaultOption("Full Auto", autos.fullAuto());
+  // AutoChooser.addOption("Simple Shoot", autos.simpleShootAuto());
+  // SmartDashboard.putData("autoChooser", autoChooser);
 
-// Getter method
-public XboxController getDriverController() {
-    return driverController;}
+  // Getter method
+  public XboxController getDriverController() {
+    return driverController;
+  }
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -91,13 +94,12 @@ public XboxController getDriverController() {
   public RobotContainer() {
     // CONFIGURE AUTO CHOOSER
     autoChooser.setDefaultOption("New Path Auto", autos.newPath());
-    autoChooser.addOption("Do nothing", Commands.none());
+    autoChooser.addOption("Do Nothing", Commands.none());
+
     // Configure the button bindings
     configureButtonBindings(
   
     );
-
-
     
     // Configure default commands
     drivetrain.setDefaultCommand(
@@ -112,12 +114,14 @@ public XboxController getDriverController() {
 
                 // Robot-relative drive: false = robot-relative, true = field-relative
                 SmartDashboard.putString("Drive Mode", fieldRelative ? "Field-Relative" : "Robot-Relative");
-
-
                 drivetrain.drive(xSpeed, ySpeed, rot, fieldRelative);
-            }, drivetrain));
+
+            }, drivetrain)
+      );
       //autoChooser.setDefaultOption("test 2", autos.newPath());
-      SmartDashboard.putData("autoChooser", autoChooser);
+
+      // AUTO CHOOSER
+      SmartDashboard.putData("[Smart Dashboard] autoChooser", autoChooser);
 
     if (RobotBase.isSimulation()) {
       configureFuelSim();}}
@@ -136,6 +140,8 @@ public XboxController getDriverController() {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
+    SmartDashboard.putData("Field", m_field);
+    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
 
 
     new JoystickButton(driverController, XboxController.Button.kBack.value)
@@ -144,6 +150,8 @@ public XboxController getDriverController() {
     new JoystickButton(driverController, XboxController.Button.kY.value)
       .onTrue(new InstantCommand(() -> drivetrain.zeroHeading()));
 
+      //new JoystickButton(driverController, XboxController.Button.kY.value)
+      //.toggleOnTrue(shooterSubsystem.hoodStowCommand());
 
     new JoystickButton(driverController, XboxController.Button.kLeftBumper.value)
     .onTrue(intakeSubsystem.runUpCommand())
@@ -164,33 +172,20 @@ public XboxController getDriverController() {
     new JoystickButton(opController, XboxController.Button.kX.value)
       .toggleOnTrue(hopperSubsystem.rollCommand());
 
-    new JoystickButton(opController, XboxController.Button.kRightBumper.value)
-      .toggleOnTrue(shooterSubsystem.shootCommand(() -> vision.getHubDistance()))
-      .toggleOnFalse(shooterSubsystem.stopShotCommand());
-
-    new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
-      .toggleOnTrue(shooterSubsystem.reverseShot())
-      .toggleOnFalse(shooterSubsystem.stopShotCommand());
+    new JoystickButton(opController, XboxController.Button.kB.value)
+      .toggleOnTrue(shooterSubsystem.shootCommand(() -> vision.getHubDistance()));
 
     new JoystickButton(opController, XboxController.Button.kA.value)
       .toggleOnTrue(shooterSubsystem.shootFixedCommand());
 
-    new JoystickButton(opController, XboxController.Button.kB.value)
-      .toggleOnTrue(intakeSubsystem.ejectCommand());
-
-    /*new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
-      .onTrue(climberSubsystem.climbUpCommand(2));
-
-    new JoystickButton(opController, XboxController.Button.kRightBumper.value)
-      .onTrue(climberSubsystem.climbDownCommand(5));
-*/
-  //A Button- Allign to Tag 25
-  new JoystickButton(driverController, XboxController.Button.kB.value)
-    .whileTrue(new AlignToTagCommand(drivetrain, vision.getFrontLeftCamera(), vision.getFrontRightCamera(), fieldLayout));
+    //A Button- Allign to Tag 25
+    new JoystickButton(driverController, XboxController.Button.kB.value)
+      .whileTrue(new AlignToTagCommand(drivetrain, vision.getFrontLeftCamera(), vision.getFrontRightCamera(), fieldLayout));
   }
-  
 
-  
+  public void periodic() {
+    m_field.setRobotPose(drivetrain.getPose());
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -208,6 +203,7 @@ public XboxController getDriverController() {
   public Vision getVision() {
     return vision;
   }
+
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
   }

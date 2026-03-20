@@ -6,6 +6,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants.HopperSubsystemConstants;
@@ -48,5 +49,13 @@ public class HopperSubsystem extends SubsystemBase {
                 this.setRollerPower(0);
                 this.setindexerPower(0);
             } );
-    }
+        }
+
+public Command stopRollerCommand() {
+        return new InstantCommand(() -> {
+            setRollerPower(0);
+            setindexerPower(0);
+           }
+            ,this);
+        }
 }

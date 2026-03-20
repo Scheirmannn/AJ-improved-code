@@ -3,10 +3,12 @@ package frc.robot;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
+import frc.robot.subsystems.Vision;
 
 public class Autos {
     private final AutoFactory factory;
@@ -14,21 +16,18 @@ public class Autos {
     private final ShooterSubsystem shooter;
     private final HopperSubsystem hopper;
     private final IntakeSubsystem intake;
+    private final Vision vision;
 
     private static final double SHOOTER_SPINUP_SECONDS = 1;
-
     private static final double SHOOT_DURATION_SECONDS = 2.5;
-
     private static final double INTAKE_DURATION_SECONDS = 2;
     
-    public Autos (DriveSubsystem drivetrain,
-                  ShooterSubsystem shooter,
-                  HopperSubsystem hopper,
-                  IntakeSubsystem intake) {
+    public Autos (DriveSubsystem drivetrain, ShooterSubsystem shooter, HopperSubsystem hopper, IntakeSubsystem intake, Vision vision) {
         this.drivetrain = drivetrain;
         this.shooter = shooter;
         this.hopper = hopper;
         this.intake = intake;
+        this.vision = vision;
 
         factory = new AutoFactory(
             drivetrain::getPose,
@@ -38,9 +37,8 @@ public class Autos {
             drivetrain);
     }
 
- 
     /*
-   1.Drive Back towards shooting zone
+    1.Drive Back towards shooting zone
     2.Spin up shooters then shoot preload
     3.Drive to depot station and collect
     4.Go back to shoot zone
@@ -48,57 +46,66 @@ public class Autos {
     6. Drive to hang
     7. Hang
     */
+
+    // ----------------------------------------------------------------------------
+    /* Not using anymore
+
+    public Command fullAuto() {
+        var routine = factory.newRoutine("Full Auto");
+
+        var driveToHub = routine.trajectory("DriveToHub");
+        var hubToDepot = routine.trajectory("DepotToHub");
+        var DepotToHub = routine.trajectory("DepotToHub");
+        var hubToHang = routine.trajectory("HubToHang");
+
+        routine.active().onTrue(
+            Commands.sequence(
+                //Reset odom and drive to hub
+                driveToHub.resetOdometry(),
+                Commands.parallel(
+                    driveToHub.cmd(),
+                intake.runDownCommand() //deploy intake arm while driving
+            ),
+            //Spin up shooter and set hood
+            //Run shooter motor and set hood simultaneously, then wait for spinup
+
+            Commands.parallel(
+                shooter.hoodCloseCommand(),
+                shooter.shootCommand().withTimeout(SHOOTER_SPINUP_SECONDS)
+            ),
+
+            //Feed hopper to shoot preloaded fuel
+            //Keep shooter running and run hopper to feed balls in
+            Commands.parallel(
+                shooter.shootCommand().withTimeout(SHOOT_DURATION_SECONDS),
+                hopper.rollCommand().withTimeout(SHOOT_DURATION_SECONDS)
+            ),
             
 
+            Commands.runOnce(() -> drivetrain.drive(0, 0, 0, true)), drivetrain)
+        );
+    }
+    */
+    // ----------------------------------------------------------------------------
+    public Command newPath() {
+        var routine = factory.newRoutine("NewAuto");
+        var traj1 = routine.trajectory("Driveback_1m"); // Default auto
 
-/* 
-  public Command fullAuto() {
-    var routine = factory.newRoutine("Full Auto");
-
-    var driveToHub = routine.trajectory("DriveToHub");
-    var hubToDepot = routine.trajectory("DepotToHub");
-    var DepotToHub = routine.trajectory("DepotToHub");
-    var hubToHang = routine.trajectory("HubToHang");
-
-    routine.active().onTrue(
-        Commands.sequence(
-            //Reset odom and drive to hub
-            driveToHub.resetOdometry(),
-            Commands.parallel(
-                driveToHub.cmd(),
-            intake.runDownCommand() //deploy intake arm while driving
-        ),
-        //Spin up shooter and set hood
-        //Run shooter motor and set hood simultaneously, then wait for spinup
-        Commands.parallel(
-            shooter.hoodCloseCommand(),
-            shooter.shootCommand().withTimeout(SHOOTER_SPINUP_SECONDS)
-        ),
-
-        //Feed hopper to shoot preloaded fuel
-        //Keep shooter running and run hopper to feed balls in
-        Commands.parallel(
-            shooter.shootCommand().withTimeout(SHOOT_DURATION_SECONDS),
-            hopper.rollCommand().withTimeout(SHOOT_DURATION_SECONDS)
-        ),
-
-        Commands.runOnce(() -> drivetrain.drive(0, 0, 0, true)), drivetrain));
-
-
-    
-  }
-        */
-public Command newPath() {
-    var routine = factory.newRoutine("NewAuto");
-    var traj1 = routine.trajectory("Driveback 1m");
-
-    routine.active().onTrue(
-        Commands.sequence(
-        traj1.resetOdometry(),
-        traj1.cmd(),
-        Commands.runOnce(()-> drivetrain.drive(0, 0, 0, false), drivetrain)
-        )
-    );    
-    return routine.cmd();
-} 
+        routine.active().onTrue(
+            Commands.sequence(
+                new InstantCommand (() -> drivetrain.zeroHeading()),
+                Commands.waitSeconds(.5),
+                traj1.cmd(),
+                Commands.runOnce(()-> drivetrain.drive(0, 0, 0, true), drivetrain),
+                shooter.reverseShot(),
+                Commands.waitSeconds(1),
+                shooter.shootCommand(() -> vision.getHubDistance()),
+                Commands.waitSeconds(1),
+                hopper.rollCommand(),
+                Commands.waitSeconds(8)
+                
+            )
+        );    
+        return routine.cmd();
+    } 
 }
