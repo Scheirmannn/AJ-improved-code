@@ -20,6 +20,7 @@ import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -53,6 +54,16 @@ public class RobotContainer {
   private final HopperSubsystem hopperSubsystem = new HopperSubsystem();
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
+  private final Autos autos = new Autos(
+    drivetrain, 
+    shooterSubsystem, 
+    hopperSubsystem, 
+    intakeSubsystem
+  );
+
+  // AUTO CHOOSER
+  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+
   // The driver's controller
  private final XboxController driverController = new XboxController(0);
  private final XboxController opController = new XboxController(1);
@@ -78,6 +89,9 @@ public XboxController getDriverController() {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    // CONFIGURE AUTO CHOOSER
+    autoChooser.setDefaultOption("New Path Auto", autos.newPath());
+    autoChooser.addOption("Do nothing", Commands.none());
     // Configure the button bindings
     configureButtonBindings(
   
@@ -103,7 +117,7 @@ public XboxController getDriverController() {
                 drivetrain.drive(xSpeed, ySpeed, rot, fieldRelative);
             }, drivetrain));
       //autoChooser.setDefaultOption("test 2", autos.newPath());
- //   SmartDashboard.putData("autoChooser", autoChooser);
+      SmartDashboard.putData("autoChooser", autoChooser);
 
     if (RobotBase.isSimulation()) {
       configureFuelSim();}}
@@ -147,12 +161,16 @@ public XboxController getDriverController() {
     new JoystickButton(opController, XboxController.Button.kY.value)
       .toggleOnTrue(intakeSubsystem.runIntakeCommand());
 
-
     new JoystickButton(opController, XboxController.Button.kX.value)
       .toggleOnTrue(hopperSubsystem.rollCommand());
 
     new JoystickButton(opController, XboxController.Button.kRightBumper.value)
-      .toggleOnTrue(shooterSubsystem.shootCommand(() -> vision.getHubDistance()));
+      .toggleOnTrue(shooterSubsystem.shootCommand(() -> vision.getHubDistance()))
+      .toggleOnFalse(shooterSubsystem.stopShotCommand());
+
+    new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
+      .toggleOnTrue(shooterSubsystem.reverseShot())
+      .toggleOnFalse(shooterSubsystem.stopShotCommand());
 
     new JoystickButton(opController, XboxController.Button.kA.value)
       .toggleOnTrue(shooterSubsystem.shootFixedCommand());
@@ -189,5 +207,8 @@ public XboxController getDriverController() {
 
   public Vision getVision() {
     return vision;
+  }
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
   }
 }

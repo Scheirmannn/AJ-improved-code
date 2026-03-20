@@ -12,6 +12,8 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -83,6 +85,10 @@ public class Vision extends SubsystemBase {
       visionSim.addCamera(frontRightCamSim, Constants.Vision.kRobotToFrontRightCamera);
       frontRightCamSim.enableDrawWireframe(true);
     }
+
+    HttpCamera m_stream1 = new HttpCamera(Constants.Vision.kFrontLeftCameraName, "http://10.94.10.11:1182/stream.mjpg");
+    CameraServer.addCamera(m_stream1);
+
   }
 
   
@@ -169,7 +175,8 @@ public class Vision extends SubsystemBase {
 
     for (var target: result.getTargets()) {
       int id = target.getFiducialId();
-      if (id == 10 || id == 25) {
+      if (id == 10 || id == 26 || id == 8 || id == 11 || id == 27 || id == 24
+      ) {
         double distance = target.getBestCameraToTarget()
         .getTranslation().getNorm();
         SmartDashboard.putNumber("Shooter/Distance (m)", distance);

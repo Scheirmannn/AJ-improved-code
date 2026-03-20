@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.units.measure.Power;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -98,7 +99,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command runIntakeCommand() {
         return this.startEnd( () ->
-        setIntakePower(-.4),
+        setIntakePower(-.6),
         () -> setIntakePower(0));
     }
     //Reverses the intake roller to eject balls

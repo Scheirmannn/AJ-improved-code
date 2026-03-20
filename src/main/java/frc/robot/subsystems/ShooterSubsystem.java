@@ -110,7 +110,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 shotLabel = "Far";
             }
             SmartDashboard.putString("Shot Selection", shotLabel);
-            
+
             double shooterRPM = shooterRPMMap.get(dist);
             double backrollerRPM = backrollerRPMMap.get(dist);
 
@@ -132,6 +132,22 @@ public class ShooterSubsystem extends SubsystemBase {
                 setBackRollerRPM(4500);
             }, this::stopAll)
             .withName("Shoot Fixed");
+    }
+
+    public Command stopShotCommand() {
+        return this.run(
+            () -> {
+                setShooterRPM(0);
+                setBackRollerRPM(0);
+            });       
+    }
+
+    public Command reverseShot() {
+        return this.run(
+            () -> {
+                setBackRollerRPM(-600);
+                setShooterRPM(-400);
+            });
     }
 }
 

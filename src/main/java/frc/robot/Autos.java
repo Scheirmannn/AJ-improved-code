@@ -3,13 +3,13 @@ package frc.robot;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Configs.IntakeSubsystem;
-import frc.robot.Configs.ShooterSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 
 public class Autos {
-    /*private final AutoFactory factory;
+    private final AutoFactory factory;
     private final DriveSubsystem drivetrain;
     private final ShooterSubsystem shooter;
     private final HopperSubsystem hopper;
@@ -39,6 +39,7 @@ public class Autos {
     }
 
  
+    /*
    1.Drive Back towards shooting zone
     2.Spin up shooters then shoot preload
     3.Drive to depot station and collect
@@ -46,9 +47,11 @@ public class Autos {
     5. spin up shooter then shoot
     6. Drive to hang
     7. Hang
+    */
+            
 
-  
 
+/* 
   public Command fullAuto() {
     var routine = factory.newRoutine("Full Auto");
 
@@ -84,20 +87,18 @@ public class Autos {
 
     
   }
+        */
 public Command newPath() {
-    var routine = factory.newRoutine("test 2");
-    var traj1 = routine.trajectory("Path1");
-    var traj2 = routine.trajectory("Path2");
+    var routine = factory.newRoutine("NewAuto");
+    var traj1 = routine.trajectory("Driveback 1m");
 
     routine.active().onTrue(
         Commands.sequence(
         traj1.resetOdometry(),
         traj1.cmd(),
-        Commands.runOnce(()-> drivetrain.drive(0, 0, 0, false), drivetrain),
-        Commands.waitSeconds(3),
-        traj2.cmd(),
-        Commands.runOnce(() -> drivetrain.drive(0, 0, 0, false), drivetrain)
+        Commands.runOnce(()-> drivetrain.drive(0, 0, 0, false), drivetrain)
         )
     );    
     return routine.cmd();
-}*/ }
+} 
+}
