@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import java.security.Key;
 import java.util.function.DoubleSupplier;
 
 import com.revrobotics.PersistMode;

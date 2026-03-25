@@ -3,15 +3,11 @@ package frc.robot.subsystems;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.units.measure.Power;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants.IntakeSubsystemConstants;
@@ -25,7 +21,6 @@ public class IntakeSubsystem extends SubsystemBase {
     //Initialize intake SPARK. We will use open loop control for this
     private final SparkMax PivotMotor =
         new SparkMax(IntakeSubsystemConstants.kPivotMotorCanId, MotorType.kBrushless);
-    private final SparkClosedLoopController pivotController = PivotMotor.getClosedLoopController();
     private final AbsoluteEncoder pivotEncoder = PivotMotor.getAbsoluteEncoder();
 
 
@@ -49,12 +44,6 @@ public class IntakeSubsystem extends SubsystemBase {
     private void setIntakePower(double power) {
         IntakeMotor.set(power);
     }
-
-    private void setPivotAngle(double degrees) {
-        pivotController.setSetpoint(degrees, ControlType.kPosition);
-    }
-
-
 
     public double getPivotAngle() {
         return pivotEncoder.getPosition();

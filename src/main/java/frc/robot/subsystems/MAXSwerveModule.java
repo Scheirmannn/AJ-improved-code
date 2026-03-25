@@ -30,8 +30,6 @@ public class MAXSwerveModule {
   private double m_simDrivePosition = 0;
   private double m_simTurnPosition = 0;
   private double m_simDriveVelocity = 0;
-  private double m_simTurnVelocity = 0;
-
   private static final double kTurnSimP = 20.0;
   private static final double kSimUpdatePeriod = .02;
 
@@ -79,7 +77,6 @@ public class MAXSwerveModule {
       m_simTurnPosition = chassisAngularOffset;
       m_simDrivePosition = 0;
       m_simDriveVelocity = 0;
-      m_simTurnVelocity = 0;
 
     }
   }

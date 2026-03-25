@@ -19,10 +19,6 @@ public class Autos {
     private final IntakeSubsystem intake;
     private final Vision vision;
 
-    private static final double SHOOTER_SPINUP_SECONDS = 1;
-    private static final double SHOOT_DURATION_SECONDS = 2.5;
-    private static final double INTAKE_DURATION_SECONDS = 2;
-    
     public Autos (DriveSubsystem drivetrain, ShooterSubsystem shooter, HopperSubsystem hopper, IntakeSubsystem intake, Vision vision) {
         this.drivetrain = drivetrain;
         this.shooter = shooter;
@@ -38,55 +34,7 @@ public class Autos {
             drivetrain);
     }
 
-    /*
-    1.Drive Back towards shooting zone
-    2.Spin up shooters then shoot preload
-    3.Drive to depot station and collect
-    4.Go back to shoot zone
-    5. spin up shooter then shoot
-    6. Drive to hang
-    7. Hang
-    */
-
-    // ----------------------------------------------------------------------------
-    /* Not using anymore
-
-    public Command fullAuto() {
-        var routine = factory.newRoutine("Full Auto");
-
-        var driveToHub = routine.trajectory("DriveToHub");
-        var hubToDepot = routine.trajectory("DepotToHub");
-        var DepotToHub = routine.trajectory("DepotToHub");
-        var hubToHang = routine.trajectory("HubToHang");
-
-        routine.active().onTrue(
-            Commands.sequence(
-                //Reset odom and drive to hub
-                driveToHub.resetOdometry(),
-                Commands.parallel(
-                    driveToHub.cmd(),
-                intake.runDownCommand() //deploy intake arm while driving
-            ),
-            //Spin up shooter and set hood
-            //Run shooter motor and set hood simultaneously, then wait for spinup
-
-            Commands.parallel(
-                shooter.hoodCloseCommand(),
-                shooter.shootCommand().withTimeout(SHOOTER_SPINUP_SECONDS)
-            ),
-
-            //Feed hopper to shoot preloaded fuel
-            //Keep shooter running and run hopper to feed balls in
-            Commands.parallel(
-                shooter.shootCommand().withTimeout(SHOOT_DURATION_SECONDS),
-                hopper.rollCommand().withTimeout(SHOOT_DURATION_SECONDS)
-            ),
-            
-
-            Commands.runOnce(() -> drivetrain.drive(0, 0, 0, true)), drivetrain)
-        );
-    }
-    */
+   
     // ----------------------------------------------------------------------------
     public Command newPath() {
         var routine = factory.newRoutine("NewAuto");

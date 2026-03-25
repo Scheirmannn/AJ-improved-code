@@ -45,6 +45,19 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();  // <-- Create container
     
     drivetrain = m_robotContainer.getDrivetrain(); // <-- Get the drivetrain
+
+    new Thread(new Runnable(){
+      @Override
+      public void run() {
+      try {
+        Thread.sleep(2000);
+        drivetrain.zeroHeading();
+        System.out.println("Gyro zeroed on startup");
+      } catch (InterruptedException e) {
+        Thread.currentThread().isInterrupted();
+      }
+    }
+    }).start();
   }
 
   /**

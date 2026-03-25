@@ -8,15 +8,19 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AlignToTagCommand extends Command {
     //Tag IDs to align to - add or change as needed
-    private static final int[] TARGET_IDS = {10, 25};
+    private static final int[] TARGET_IDS = {10, 26};
 
     //How close you want to stop from the tag(meters)
     private static final double DESIRED_RANGE_M = .7;
     private static final double RANGE_DEADBAND_M = .1;
+    private static final double FRONT_LEFT_CAMERA_YAW_OFFSET = 30;
+    private static final double FRONT_RIGHT_CAMERA_YAW_OFFSET = -30;
+        
 
     //PID for yaw correction (turning to face the tag)
     //Tune kP:increase if turning is too slow, decrease if it oscillates
@@ -107,17 +111,21 @@ public class AlignToTagCommand extends Command {
         return false;
     }
     private void stop() {
-        drivetrain.drive(0, 0, 0, false);
+        drivetrain.drive(0, 0, 0, true);
     }
 
     private CameraTarget findTarget(PhotonCamera camera) {
         var result = camera.getLatestResult();
         if (!result.hasTargets()) return null;
 
+        double yawOffset = camera.getName().equals(Constants.Vision.kFrontLeftCameraName)
+            ? FRONT_LEFT_CAMERA_YAW_OFFSET
+            : FRONT_RIGHT_CAMERA_YAW_OFFSET;
+
         for (var target : result.getTargets()) {
             for (int id : TARGET_IDS) {
                 if (target.getFiducialId() == id) {
-                    return new CameraTarget(id, target.getYaw(), camera.getName());
+                    return new CameraTarget(id, target.getYaw() - yawOffset, camera.getName());
                 }
             }
         }
