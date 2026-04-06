@@ -14,12 +14,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Commands.AlignToTagCommand;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.HopperSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision;
@@ -40,19 +40,17 @@ public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem drivetrain = new DriveSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(18,19,21);
   private final Vision vision = new Vision(drivetrain::addVisionMeasurement);
-  private final HopperSubsystem hopperSubsystem = new HopperSubsystem();
 
   private final Field2d m_field = new Field2d();
 
-  private final Autos autos = new Autos(
-    drivetrain,
-    shooterSubsystem,
-    hopperSubsystem,
-    intakeSubsystem, 
-    vision
-  );
+  // private final Autos autos = new Autos(
+  //   drivetrain,
+  //   shooterSubsystem,
+  //   intakeSubsystem, 
+  //   vision
+  // );
 
   // AUTO CHOOSER
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
@@ -84,7 +82,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // CONFIGURE AUTO CHOOSER
-    autoChooser.setDefaultOption("New Path Auto", autos.newPath());
+    //autoChooser.setDefaultOption("New Path Auto", autos.newPath());
     autoChooser.addOption("Do Nothing", Commands.none());
 
     // Configure the button bindings
@@ -134,6 +132,12 @@ public class RobotContainer {
     SmartDashboard.putData("Field", m_field);
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
 
+    new Trigger(() -> opController.getLeftTriggerAxis() > 0.1)
+        .whileTrue(intakeSubsystem.runIntakeCommand());
+
+    new Trigger(() -> opController.getRightTriggerAxis() > 0.1)
+        .whileTrue(shooterSubsystem.fullShootCommand(4000.0 ,3000.0))
+        .onFalse(shooterSubsystem.fullStopCommand());
 
     new JoystickButton(driverController, XboxController.Button.kBack.value)
       .onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
@@ -145,34 +149,19 @@ public class RobotContainer {
       //.toggleOnTrue(shooterSubsystem.hoodStowCommand());
 
     new JoystickButton(driverController, XboxController.Button.kLeftBumper.value)
-    .onTrue(intakeSubsystem.runUpCommand())
-    .onFalse(intakeSubsystem.runStopCommand());
+      .onTrue(intakeSubsystem.runUpCommand())
+      .onFalse(intakeSubsystem.runStopCommand());
 
     new JoystickButton(driverController, XboxController.Button.kRightBumper.value)
-    .onTrue(intakeSubsystem.runDownCommand())
-    .onFalse(intakeSubsystem.runStopCommand());
+      .onTrue(intakeSubsystem.runDownCommand())
+      .onFalse(intakeSubsystem.runStopCommand());
 
     new JoystickButton(driverController, XboxController.Button.kStart.value)
-        .whileTrue(new RunCommand(
-            () -> drivetrain.setX(),
-            drivetrain));
+      .whileTrue(new RunCommand(
+        () -> drivetrain.setX(), drivetrain));
 
     new JoystickButton(opController, XboxController.Button.kY.value)
       .whileTrue(intakeSubsystem.runIntakeCommand());
-
-    new JoystickButton(opController, XboxController.Button.kX.value)
-      .whileTrue(hopperSubsystem.rollCommand())
-      .whileFalse(hopperSubsystem.stopRollerCommand());
-
-    new JoystickButton(opController, XboxController.Button.kRightBumper.value)
-      .whileTrue(shooterSubsystem.shootCommand(() -> vision.getHubDistance()));
-
-    new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
-      .whileTrue(shooterSubsystem.reverseShot())
-      .whileFalse(shooterSubsystem.stopShotCommand());
-
-    new JoystickButton(opController, XboxController.Button.kA.value)
-      .toggleOnTrue(shooterSubsystem.shootFixedCommand());
 
     //A Button- Allign to Tag 25
     new JoystickButton(driverController, XboxController.Button.kB.value)
