@@ -98,7 +98,7 @@ public final class Configs {
 
                         SHOOTER_CONFIG
                         .inverted(false)
-                        .idleMode(IdleMode.kBrake)
+                        .idleMode(IdleMode.kCoast)
                         .smartCurrentLimit(40);
                         SHOOTER_CONFIG.encoder
                         .velocityConversionFactor(1); //Native RPM
@@ -135,7 +135,7 @@ public final class Configs {
 
                 INDEXER_CONFIG
                 .inverted(false)
-                .idleMode(IdleMode.kCoast)
+                .idleMode(IdleMode.kBrake)
                 .openLoopRampRate(1)
                 .smartCurrentLimit(20);
         }

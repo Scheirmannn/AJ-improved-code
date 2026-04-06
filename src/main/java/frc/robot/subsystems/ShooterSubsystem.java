@@ -1,38 +1,34 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import com.revrobotics.spark.SparkBase.ControlType;
+
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Command;
+
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkMax;
+
 import java.util.function.DoubleSupplier;
 
 import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
-import frc.robot.Constants.ShooterSubsystemConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
-   
-    private final SparkMax ShooterMotor =
-    new SparkMax(ShooterSubsystemConstants.kShooterMotorCanId, MotorType.kBrushless);
 
-    private final SparkMax BackRollerMotor = 
-        new SparkMax(ShooterSubsystemConstants.KBackRollerMotorCanId, MotorType.kBrushless);
+    private final SparkMax shooterMotor;
+    private final SparkMax backMotor;
+    private final SparkMax rollerMotor;
 
-    private final SparkClosedLoopController shooterController = ShooterMotor.getClosedLoopController();
-    private final SparkClosedLoopController backrollerController = BackRollerMotor.getClosedLoopController();
+    private final RelativeEncoder shooterEncoder;
 
-    private final RelativeEncoder shooterEncoder = ShooterMotor.getEncoder();
-    private final RelativeEncoder backrollerEncoder = BackRollerMotor.getEncoder();
+    private Vision m_vision = null;
 
     private static final InterpolatingDoubleTreeMap shooterRPMMap = new InterpolatingDoubleTreeMap();
     private static final InterpolatingDoubleTreeMap backrollerRPMMap = new InterpolatingDoubleTreeMap();
@@ -60,103 +56,177 @@ public class ShooterSubsystem extends SubsystemBase {
         backrollerRPMMap.put(5.0, 4500.0);   
     }
     
+    public ShooterSubsystem(int shooterMotorId, int backMotorId, int rollerMotorId) {
+        shooterMotor = new SparkMax(shooterMotorId, SparkMax.MotorType.kBrushless);
+        backMotor = new SparkMax(backMotorId, SparkMax.MotorType.kBrushless);
+        rollerMotor = new SparkMax(rollerMotorId, SparkMax.MotorType.kBrushless);
 
-    public ShooterSubsystem() {
-        ShooterMotor.configure(
-        Configs.ShooterSubsystem.SHOOTER_CONFIG,
-        ResetMode.kResetSafeParameters, 
-        PersistMode.kPersistParameters);
+        shooterMotor.configure(Configs.ShooterSubsystem.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        backMotor.configure(Configs.ShooterSubsystem.BACKROLLER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rollerMotor.configure(Configs.HopperSubsystem.INDEXER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        BackRollerMotor.configure(
-            Configs.ShooterSubsystem.BACKROLLER_CONFIG,
-            ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters);
+        shooterEncoder = shooterMotor.getEncoder();
+
+        SmartDashboard.putBoolean("Shooter at Speed", false);
+    }
+    //Moved distance calcs to outside the shootCommand
+    public double desiredShooterRPM(DoubleSupplier distanceMeters) {
+        double dist = distanceMeters.getAsDouble();
+
+        // Clamp distance to table bouds so it doesnt extrapolate wildly
+        dist = Math.max(1.0, Math.min(5.0, dist));
+
+        // Shot selection label for dashboard
+        String shotLabel;
+        if (dist < 1.7) {
+            shotLabel = "Close";
+        } else if (dist < 2.7) {
+            shotLabel = "Mid-Close";
+        } else if (dist < 3.5) {
+            shotLabel = "Mid";
+        } else if (dist < 4.5) {
+            shotLabel = "Mid-Far";
+        } else {
+            shotLabel = "Far";
+        }
+        SmartDashboard.putString("Shot Selection", shotLabel);
+
+        return shooterRPMMap.get(dist);
     }
 
-    private void setBackRollerRPM(double rpm) {
-        backrollerController.setSetpoint(rpm , ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    public double desiredBackRPM(DoubleSupplier distanceMeters) {
+        double dist = distanceMeters.getAsDouble();
+
+        // Clamp distance to table bouds so it doesnt extrapolate wildly
+        dist = Math.max(1.0, Math.min(5.0, dist));
+
+        // Shot selection label for dashboard
+        String shotLabel;
+        if (dist < 1.7) {
+            shotLabel = "Close";
+        } else if (dist < 2.7) {
+            shotLabel = "Mid-Close";
+        } else if (dist < 3.5) {
+            shotLabel = "Mid";
+        } else if (dist < 4.5) {
+            shotLabel = "Mid-Far";
+        } else {
+            shotLabel = "Far";
+        }
+        SmartDashboard.putString("Shot Selection", shotLabel);
+
+        return backrollerRPMMap.get(dist);
     }
-    private void setShooterRPM(double rpm) {
-        shooterController.setSetpoint(rpm , ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    //added vision setter for shooter
+    public void useVision(Vision vision) {
+        m_vision = vision;
     }
-    private void stopAll() {
-        ShooterMotor.set(0);
-        BackRollerMotor.set(0);
+    //shooter velo methods to work with roller wait
+    public double getShooterVelocity() {
+        return shooterEncoder.getVelocity();
+    }
+
+    public boolean isAtSpeed(double shooterRPM) {
+        return getShooterVelocity() >= (shooterRPM * 0.95);
+    }
+
+    public boolean isAtVisionSpeed() {
+        return getShooterVelocity() >= (desiredShooterRPM(() -> m_vision.getHubDistance()) * 0.95);
+    }
+
+    public boolean isShooterRunning() {
+        return getShooterVelocity() > 1;
+    }
+    //rpm controls
+    public void setShooterVelo(double rpm) {
+        shooterMotor.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
+    }
+
+    public void setBackVelo(double rpm) {
+        backMotor.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
+    }
+
+    public void setRollerVelo(double rpm) {
+        rollerMotor.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
+    }
+
+    public void gateStop() {
+        rollerMotor.stopMotor();
+    }
+
+    public Command shootCommand(double shooterRPM, double backRPM) {
+        return new RunCommand(() -> {
+            setShooterVelo(shooterRPM);
+            setBackVelo(backRPM);
+        });
+    }
+
+    public Command shootVisionCommand(DoubleSupplier distanceMeters) {
+        return new RunCommand(() -> {
+            double shooterRPM = desiredShooterRPM(distanceMeters);
+            double backRPM = desiredBackRPM(distanceMeters);
+
+            setShooterVelo(shooterRPM);
+            setBackVelo(backRPM);
+
+            SmartDashboard.putNumber("Shooter/Distance (m)", distanceMeters.getAsDouble());
+            SmartDashboard.putNumber("Shooter/Flywheel RPM", shooterRPM);
+            SmartDashboard.putNumber("Shooter/Backroller RPM", backRPM);
+        });
+    }
+
+    public Command rollerStartCommand() {
+        return new InstantCommand(() -> setRollerVelo(3000), this);
+    }
+
+    public Command rollerReverseCommand() {
+        return new InstantCommand(() -> setRollerVelo(-3000), this);
+    }
+
+    public Command rollerWaitommand(double shooterRPM) {
+        return Commands.sequence(
+                Commands.waitUntil(() -> isAtSpeed(shooterRPM)),
+                Commands.waitSeconds(0.5),
+                rollerStartCommand());
+    }
+
+    public Command rollerWaitVisionCommand() {
+        return Commands.sequence(
+            Commands.waitUntil(this::isAtVisionSpeed),
+            Commands.waitSeconds(0.25),
+            rollerStartCommand()
+        );
+    }
+
+    public Command rollerStopCommand() {
+        return new InstantCommand(() -> setRollerVelo(0) , this);
+    }
+
+    public Command fullStopCommand() {
+        return new InstantCommand(() -> {
+            gateStop();
+            setBackVelo(0);
+            setShooterVelo(0);
+        }, this);
+    }
+
+    public Command fullShootCommand(double shooterRPM, double backRPM) {
+        return Commands.parallel(
+            shootCommand(shooterRPM, backRPM),
+            rollerWaitommand(shooterRPM)
+        );
+    }
+
+    public Command fullShootVisionCommand() {
+        return Commands.parallel(
+            shootVisionCommand(() -> m_vision.getHubDistance()),
+            rollerWaitVisionCommand()
+        );
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Shooter/Flywheel RPM", shooterEncoder.getVelocity());
-        SmartDashboard.putNumber("Shooter/Backroller RPM", backrollerEncoder.getVelocity());
+       SmartDashboard.putNumber("shooter RPM", getShooterVelocity());
     }
-
-    public Command shootCommand(DoubleSupplier distanceMeters) {
-        return new RunCommand(() -> {
-            double dist = distanceMeters.getAsDouble();
-
-            //Clamp distance to table bouds so it doesnt extrapolate wildly
-            dist = Math.max(1.0, Math.min(5.0, dist));
-
-            //Shot selection label for dashboard
-            String shotLabel;
-            if (dist < 1.7) {
-                shotLabel = "Close";
-            } else if (dist < 2.7) {
-                shotLabel = "Mid-Close";
-            } else if (dist < 3.5) {
-                shotLabel = "Mid";
-            } else if (dist < 4.5) {
-                shotLabel = "Mid-Far";
-            } else {
-                shotLabel = "Far";
-            }
-            SmartDashboard.putString("Shot Selection", shotLabel);
-
-            double shooterRPM = shooterRPMMap.get(dist);
-            double backrollerRPM = backrollerRPMMap.get(dist);
-
-            setShooterRPM(shooterRPM);
-            setBackRollerRPM(backrollerRPM);
-
-            SmartDashboard.putNumber("Shooter/Distance (m)", dist);
-            SmartDashboard.putNumber("Shooter/Flywheel RPM", shooterRPM);
-            SmartDashboard.putNumber("Shooter/Backroller RPM", backrollerRPM);
-        }).finallyDo(interrupted -> stopAll()).withName("Shoot");
-    }
-    
-    //Fallback Command for when vision is not available
-    //Runs both wheels at a fixed flat power
-     public Command shootFixedCommand() {
-         return this.startEnd(
-             () -> {
-                 setShooterRPM(3000);
-                 setBackRollerRPM(5000);
-             }, this::stopAll)
-             .withName("Shoot Fixed");
-     }
-    public Command shootFixedAutoCommand() {
-        return new InstantCommand(
-            () -> {
-                setShooterRPM(3000);
-                setBackRollerRPM(5500);
-            });
-    }
-
-    public Command stopShotCommand() {
-        return new InstantCommand(
-            () -> {
-                setShooterRPM(0);
-                setBackRollerRPM(0);
-            });       
-    }
-
-
-       public Command reverseShot() {
-        return new InstantCommand(() -> {
-            setBackRollerRPM(-600);
-            setShooterRPM(-400);
-           }
-            ,this);
-        }
 }
 
