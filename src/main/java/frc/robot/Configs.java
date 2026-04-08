@@ -60,7 +60,7 @@ public final class Configs {
     }
 
 
-    public static final class IntakeSubsystem {
+    public static final class Intake {
         public static final SparkMaxConfig INTAKE_CONFIG = new SparkMaxConfig();
         public static final SparkMaxConfig PIVOT_CONFIG = new SparkMaxConfig();
 
@@ -89,7 +89,7 @@ public final class Configs {
                 .positionWrappingEnabled(true);
         }
         }
-        public static final class ShooterSubsystem {
+        public static final class Shooter {
                 public static final SparkMaxConfig SHOOTER_CONFIG = new SparkMaxConfig();
                 public static final SparkMaxConfig BACKROLLER_CONFIG = new SparkMaxConfig();
 

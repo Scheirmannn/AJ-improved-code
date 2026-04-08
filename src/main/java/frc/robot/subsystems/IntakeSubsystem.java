@@ -1,43 +1,34 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants.IntakeSubsystemConstants;
-import frc.robot.Constants.IntakeSubsystemConstants.IntakeSetpoints;
 
 public class IntakeSubsystem extends SubsystemBase {
     //Initialize intake SPARK. We will use open loop control for this
-    private final SparkMax IntakeMotor =
-    new SparkMax(IntakeSubsystemConstants.kIntakeMotorCanId, MotorType.kBrushless);
+    private final SparkMax IntakeMotor = new SparkMax(IntakeSubsystemConstants.kIntakeMotorCanId, MotorType.kBrushless);
     
     //Initialize intake SPARK. We will use open loop control for this
-    private final SparkMax PivotMotor =
-        new SparkMax(IntakeSubsystemConstants.kPivotMotorCanId, MotorType.kBrushless);
-    private final AbsoluteEncoder pivotEncoder = PivotMotor.getAbsoluteEncoder();
+    private final SparkMax PivotMotor = new SparkMax(IntakeSubsystemConstants.kPivotMotorCanId, MotorType.kBrushless);
 
 
     public IntakeSubsystem() {
 
-        IntakeMotor.configure(
-        Configs.IntakeSubsystem.INTAKE_CONFIG,
-        ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
+        IntakeMotor.configure(Configs.IntakeSubsystem.INTAKE_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        PivotMotor.configure(
-        Configs.IntakeSubsystem.PIVOT_CONFIG,
-        ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
+        PivotMotor.configure(Configs.IntakeSubsystem.PIVOT_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     }
 
+    public boolean m_up = true;
     
 
     //Set the intake motor power in the range of [-1, 1]
@@ -45,71 +36,65 @@ public class IntakeSubsystem extends SubsystemBase {
         IntakeMotor.set(power);
     }
 
-    public double getPivotAngle() {
-        return pivotEncoder.getPosition();
-    }
-
     private void setPivotPower(double power) {
         PivotMotor.set(power);
-    }
-
-    
-
-    public boolean pivotAtSetpoint( double targetDegrees) {
-        return Math.abs(getPivotAngle() - targetDegrees) < IntakeSubsystemConstants.kPivotToleranceDegrees;
     }
 
     //Command to run the intake and pivot motors. When the command is interrupted,
     // ex is if the button is released, the motors will stop
 
-
-    public Command runDownCommand() {
-        return new InstantCommand(() -> {
-            setPivotPower(.2);
-           }
-            ,this);
-        }
-
-public Command runIntakeandDownCommand() {
-        return new InstantCommand(() -> {
-            setIntakePower(-.5);;
-            setPivotPower(.05);;
-           }
-            ,this);
-        }
-    
-
-public Command stopIntakeCommand() {
-    return new InstantCommand(() -> {
-        setIntakePower(0);
+    public Command runIntakeCommand() {
+        return this.startEnd(() -> setIntakePower(-.6),
+                () -> setIntakePower(0));
     }
-    ,this);
-}
+
+    public Command stopIntakeCommand() {
+        return new InstantCommand(() -> {
+            setIntakePower(0);
+        }, this);
+    }
 
     public Command runUpCommand() {
         return new InstantCommand(() ->{
             setPivotPower(-.2);
-        }
-        ,this);
+            m_up = true;
+        }, this);
+    }
+
+    public Command runDownCommand() {
+        return new InstantCommand(() -> {
+            setPivotPower(.2);
+            m_up = true;
+        }, this);
     }
 
     public Command runStopCommand() {
         return new InstantCommand( () -> {
             setPivotPower(0);
-        }
-        ,this);
+        }, this);
     }
 
-    public Command runIntakeCommand() {
-        return this.startEnd( () ->
-        setIntakePower(-.6),
-        () -> setIntakePower(0));
+    public Command fullRunUpCommand() {
+        return Commands.sequence(
+            runUpCommand(),
+            Commands.waitSeconds(.25),
+            runStopCommand()
+        );
     }
-    //Reverses the intake roller to eject balls
-    //Pivot stays where it is
-    public Command ejectCommand() {
-        return this.startEnd(() -> setIntakePower(IntakeSetpoints.kExtake),
-         () -> setIntakePower(0)
-        ).withName("Eject");
+
+    public Command fullRunDownCommand() {
+        return Commands.sequence(
+            runDownCommand(),
+            Commands.waitSeconds(.25),
+            runStopCommand()
+        );
     }
+
+    public Command toggleArmCommand() {
+        if (m_up) {
+            return runDownCommand();
+        }
+        return runUpCommand();
+    }
+
 }

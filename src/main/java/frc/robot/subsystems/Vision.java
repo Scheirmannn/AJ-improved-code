@@ -86,7 +86,7 @@ public class Vision extends SubsystemBase {
       frontRightCamSim.enableDrawWireframe(true);
     }
 
-    HttpCamera m_stream1 = new HttpCamera(Constants.Vision.kFrontLeftCameraName, "http://10.94.10.11:1182/stream.mjpg");
+    HttpCamera m_stream1 = new HttpCamera(Constants.Vision.kFrontLeftCameraName, "http://10.94.91.11:1182/stream.mjpg");
     CameraServer.addCamera(m_stream1);
 
   }

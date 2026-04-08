@@ -22,11 +22,14 @@ import frc.robot.Configs;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-    private final SparkMax shooterMotor;
+    private final SparkMax shooterMotor1;
+    private final SparkMax shooterMotor2;
     private final SparkMax backMotor;
-    private final SparkMax rollerMotor;
+    private final SparkMax rollerMotor1;
+    private final SparkMax rollerMotor2;
 
-    private final RelativeEncoder shooterEncoder;
+    private final RelativeEncoder shooterEncoder1;
+    private final RelativeEncoder shooterEncoder2;
 
     private Vision m_vision = null;
 
@@ -35,37 +38,43 @@ public class ShooterSubsystem extends SubsystemBase {
 
 
     static {
-        //Distance(meters) -> shooter power
-        //Vortex Free Speed is ~6784 RPM, so dont exceed this
-        //Both wheels equal at close range, diff increases at distance
-        //to add more arc
-        //Change later
-        shooterRPMMap.put(1.04, 3000.0);
-        shooterRPMMap.put(2.4, 4000.0);
-        shooterRPMMap.put(3.0, 4250.0);
-        shooterRPMMap.put(4.0, 4600.0);
-        shooterRPMMap.put(5.0, 5500.0);
+        // Distance(meters) -> shooter power
+        // Vortex Free Speed is ~6784 RPM, so dont exceed this
+        // Both wheels equal at close range, diff increases at distance
+        // to add more arc
+        // Change later
+        shooterRPMMap.put(1.0, 2750.0);
+        shooterRPMMap.put(1.5, 2875.0);
+        shooterRPMMap.put(2.0, 3200.0);
+        shooterRPMMap.put(2.5, 3400.0);
+        shooterRPMMap.put(3.0, 3800.0);
 
-        //Distance(meters) -> backroller power
-        //Tune the ratio between shooter and backroller to shape the shot arc
-        //Change later
-        backrollerRPMMap.put(1.04, 5500.0); //eqaul at close range = flatter arc
-        backrollerRPMMap.put(2.4, 5000.0); 
-        backrollerRPMMap.put(3.0, 5000.0);
-        backrollerRPMMap.put(4.0, 4500.0);
-        backrollerRPMMap.put(5.0, 4500.0);   
+        // Distance(meters) -> backroller power
+        // Tune the ratio between shooter and backroller to shape the shot arc
+        // Change later
+        backrollerRPMMap.put(1.0, 4500.0); // eqaul at close range = flatter arc
+        backrollerRPMMap.put(1.5, 5000.0);
+        backrollerRPMMap.put(2.0, 4200.0);
+        backrollerRPMMap.put(2.5, 4600.0);
+        backrollerRPMMap.put(3.0, 4300.0);
+
     }
     
-    public ShooterSubsystem(int shooterMotorId, int backMotorId, int rollerMotorId) {
-        shooterMotor = new SparkMax(shooterMotorId, SparkMax.MotorType.kBrushless);
-        backMotor = new SparkMax(backMotorId, SparkMax.MotorType.kBrushless);
-        rollerMotor = new SparkMax(rollerMotorId, SparkMax.MotorType.kBrushless);
+    public ShooterSubsystem() {
+        shooterMotor1 = new SparkMax(1, SparkMax.MotorType.kBrushless);
+        shooterMotor2 = new SparkMax(2, SparkMax.MotorType.kBrushless);
+        backMotor = new SparkMax(3, SparkMax.MotorType.kBrushless);
+        rollerMotor1 = new SparkMax(4, SparkMax.MotorType.kBrushless);
+        rollerMotor2 = new SparkMax(5, SparkMax.MotorType.kBrushless);
 
-        shooterMotor.configure(Configs.ShooterSubsystem.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        shooterMotor1.configure(Configs.ShooterSubsystem.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        shooterMotor2.configure(Configs.ShooterSubsystem.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         backMotor.configure(Configs.ShooterSubsystem.BACKROLLER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        rollerMotor.configure(Configs.HopperSubsystem.INDEXER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rollerMotor1.configure(Configs.HopperSubsystem.INDEXER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rollerMotor2.configure(Configs.HopperSubsystem.INDEXER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        shooterEncoder = shooterMotor.getEncoder();
+        shooterEncoder1 = shooterMotor1.getEncoder();
+        shooterEncoder2 = shooterMotor1.getEncoder();
 
         SmartDashboard.putBoolean("Shooter at Speed", false);
     }
@@ -123,7 +132,9 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     //shooter velo methods to work with roller wait
     public double getShooterVelocity() {
-        return shooterEncoder.getVelocity();
+        double RPM = (Math.abs(shooterEncoder1.getVelocity()) + Math.abs(shooterEncoder2.getVelocity()));
+        
+        return RPM;
     }
 
     public boolean isAtSpeed(double shooterRPM) {
@@ -139,7 +150,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     //rpm controls
     public void setShooterVelo(double rpm) {
-        shooterMotor.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
+        shooterMotor1.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
+        shooterMotor2.getClosedLoopController().setSetpoint(-rpm, ControlType.kVelocity);
     }
 
     public void setBackVelo(double rpm) {
@@ -147,11 +159,13 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void setRollerVelo(double rpm) {
-        rollerMotor.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
+        rollerMotor1.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
+        rollerMotor2.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity);
     }
 
-    public void gateStop() {
-        rollerMotor.stopMotor();
+    public void rollerStop() {
+        rollerMotor1.stopMotor();
+        rollerMotor2.stopMotor();
     }
 
     public Command shootCommand(double shooterRPM, double backRPM) {
@@ -198,13 +212,9 @@ public class ShooterSubsystem extends SubsystemBase {
         );
     }
 
-    public Command rollerStopCommand() {
-        return new InstantCommand(() -> setRollerVelo(0) , this);
-    }
-
     public Command fullStopCommand() {
         return new InstantCommand(() -> {
-            gateStop();
+            rollerStop();
             setBackVelo(0);
             setShooterVelo(0);
         }, this);

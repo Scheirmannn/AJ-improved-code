@@ -1,24 +1,19 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotBase;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkSim;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.math.system.plant.DCMotor;
-import com.revrobotics.spark.SparkSim;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 
 import frc.robot.Configs;
 
@@ -28,7 +23,7 @@ public class MAXSwerveModule {
   private SparkSim m_drivingSparkSim;
   private SparkSim m_turningSparkSim;
   private double m_simDrivePosition = 0;
-  private double m_simTurnPosition = 0;
+  private double m_simTurningPosition = 0;
   private double m_simDriveVelocity = 0;
   private static final double kTurnSimP = 20.0;
   private static final double kSimUpdatePeriod = .02;
@@ -42,12 +37,6 @@ public class MAXSwerveModule {
   private double m_chassisAngularOffset = 0;
   private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
 
-  /**
-   * Constructs a MAXSwerveModule and configures the driving and turning motor,
-   * encoder, and PID controller. This configuration is specific to the REV
-   * MAXSwerve Module built with NEOs, SPARKS MAX, and a Through Bore
-   * Encoder.
-   */
   public MAXSwerveModule(int drivingCANId, int turningCANId, double chassisAngularOffset) {
     m_drivingSpark = new SparkMax(drivingCANId, MotorType.kBrushless);
     m_turningSpark = new SparkMax(turningCANId, MotorType.kBrushless);
@@ -58,9 +47,6 @@ public class MAXSwerveModule {
     m_drivingClosedLoopController = m_drivingSpark.getClosedLoopController();
     m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
 
-    // Apply the respective configurations to the SPARKS. Reset parameters before
-    // applying the configuration to bring the SPARK to a known good state. Persist
-    // the settings to the SPARK to avoid losing them on a power cycle.
     m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
     m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig, ResetMode.kResetSafeParameters,
@@ -74,7 +60,7 @@ public class MAXSwerveModule {
       m_drivingSparkSim = new SparkSim(m_drivingSpark, DCMotor.getNEO(1));
       m_turningSparkSim = new SparkSim(m_turningSpark, DCMotor.getNeo550(1));
 
-      m_simTurnPosition = chassisAngularOffset;
+      m_simTurningPosition = chassisAngularOffset;
       m_simDrivePosition = 0;
       m_simDriveVelocity = 0;
 
@@ -82,103 +68,92 @@ public class MAXSwerveModule {
   }
 
   public void simulationPeriodic() {
-if (!RobotBase.isSimulation()) {
-        return;
+    if (!RobotBase.isSimulation()) {
+      return;
     }
 
     // Simulate driving motor
     m_drivingSparkSim.iterate(m_drivingSpark.getAppliedOutput(), 12.0, 0.02);
-    
+
     // Update drive velocity from simulation
     m_simDriveVelocity = m_drivingSparkSim.getVelocity();
-    
+
     // Update drive position by integrating velocity
     m_simDrivePosition += m_simDriveVelocity * 0.16;
 
     // CRITICAL FIX: Simulate turning motor
     m_turningSparkSim.iterate(m_turningSpark.getAppliedOutput(), 12.0, 0.02);
-    
+
     // Get desired turn position from the desired state
     double desiredTurnPosition = m_desiredState.angle.getRadians() + m_chassisAngularOffset;
-    double currentTurnPosition = m_simTurnPosition;
-    
+    double currentTurnPosition = m_simTurningPosition;
+
     // Calculate shortest path to desired angle
     double turnError = desiredTurnPosition - currentTurnPosition;
-    while (turnError > Math.PI) turnError -= 2 * Math.PI;
-    while (turnError < -Math.PI) turnError += 2 * Math.PI;
-    
+    while (turnError > Math.PI)
+      turnError -= 2 * Math.PI;
+    while (turnError < -Math.PI)
+      turnError += 2 * Math.PI;
+
     // Simple proportional control for turning (faster response)
     double turnVelocity = turnError * kTurnSimP;
-    m_simTurnPosition += turnVelocity * kSimUpdatePeriod;
-    
+    m_simTurningPosition += turnVelocity * kSimUpdatePeriod;
+
     // Normalize position to [0, 2*PI]
-    while (m_simTurnPosition > 2 * Math.PI) m_simTurnPosition -= 2 * Math.PI;
-    while (m_simTurnPosition < 0) m_simTurnPosition += 2 * Math.PI;
-} 
-  /**
-   * Returns the current state of the module.
-   *
-   * @return The current state of the module.
-   */
-  public SwerveModuleState getState() {
-    if (RobotBase.isSimulation()) {
-      //Return simulated state
-      return new SwerveModuleState(
-        m_simDriveVelocity,
-        new Rotation2d(m_simTurnPosition - m_chassisAngularOffset));
-    } else {
-    // Apply chassis angular offset to the encoder position to get the position
-    // relative to the chassis.
-    return new SwerveModuleState(m_drivingEncoder.getVelocity(),
-        new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));}
+    while (m_simTurningPosition > 2 * Math.PI)
+      m_simTurningPosition -= 2 * Math.PI;
+    while (m_simTurningPosition < 0)
+      m_simTurningPosition += 2 * Math.PI;
   }
 
-  /**
-   * Returns the current position of the module.
-   *
-   * @return The current position of the module.
-   */
+  public SwerveModuleState getState() {
+    if (RobotBase.isSimulation()) {
+      return new SwerveModuleState(
+          m_simDriveVelocity,
+          new Rotation2d(m_simTurningPosition - m_chassisAngularOffset));
+    }
+    return new SwerveModuleState(
+        m_drivingEncoder.getVelocity(),
+        new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
+  }
+
   public SwerveModulePosition getPosition() {
     if (RobotBase.isSimulation()) {
       return new SwerveModulePosition(
-        m_simDrivePosition, new Rotation2d(m_simTurnPosition - m_chassisAngularOffset));
-    } else {
-    // Apply chassis angular offset to the encoder position to get the position
-    // relative to the chassis.
+          m_simDrivePosition,
+          new Rotation2d(m_simTurningPosition - m_chassisAngularOffset));
+    }
     return new SwerveModulePosition(
         m_drivingEncoder.getPosition(),
-        new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));}
+        new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
   }
 
-  /**
-   * Sets the desired state for the module.
-   *
-   * @param desiredState Desired state with speed and angle.
-   */
   public void setDesiredState(SwerveModuleState desiredState) {
-    // Apply chassis angular offset to the desired state.
     SwerveModuleState correctedDesiredState = new SwerveModuleState();
     correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
     correctedDesiredState.angle = desiredState.angle.plus(Rotation2d.fromRadians(m_chassisAngularOffset));
 
-    // Optimize the reference state to avoid spinning further than 90 degrees.
-Rotation2d currentAngle;
-if (RobotBase.isSimulation()) {
-  currentAngle = new Rotation2d(m_simTurnPosition);
-} else {
-  currentAngle = new Rotation2d(m_turningEncoder.getPosition());
-}
+    correctedDesiredState.optimize(RobotBase.isSimulation()
+        ? new Rotation2d(m_simTurningPosition)
+        : new Rotation2d(m_turningEncoder.getPosition()));
 
-correctedDesiredState = SwerveModuleState.optimize(correctedDesiredState, currentAngle);
-    // Command driving and turning SPARKS towards their respective setpoints.
     m_drivingClosedLoopController.setSetpoint(correctedDesiredState.speedMetersPerSecond, ControlType.kVelocity);
     m_turningClosedLoopController.setSetpoint(correctedDesiredState.angle.getRadians(), ControlType.kPosition);
+
+    if (RobotBase.isSimulation()) {
+      m_simDriveVelocity = correctedDesiredState.speedMetersPerSecond;
+      m_simTurningPosition = correctedDesiredState.angle.getRadians();
+      m_simDrivePosition += m_simDriveVelocity * 0.02;
+    }
 
     m_desiredState = desiredState;
   }
 
-  /** Zeroes all the SwerveModule encoders. */
   public void resetEncoders() {
     m_drivingEncoder.setPosition(0);
+    if (RobotBase.isSimulation()) {
+      m_simDrivePosition = 0.0;
+      m_simDriveVelocity = 0.0;
+    }
   }
 }
