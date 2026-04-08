@@ -22,9 +22,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public IntakeSubsystem() {
 
-        IntakeMotor.configure(Configs.IntakeSubsystem.INTAKE_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        IntakeMotor.configure(Configs.Intake.INTAKE_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        PivotMotor.configure(Configs.IntakeSubsystem.PIVOT_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        PivotMotor.configure(Configs.Intake.PIVOT_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     }
 

@@ -61,15 +61,15 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     
     public ShooterSubsystem() {
-        shooterMotor1 = new SparkMax(1, SparkMax.MotorType.kBrushless);
-        shooterMotor2 = new SparkMax(2, SparkMax.MotorType.kBrushless);
-        backMotor = new SparkMax(3, SparkMax.MotorType.kBrushless);
-        rollerMotor1 = new SparkMax(4, SparkMax.MotorType.kBrushless);
-        rollerMotor2 = new SparkMax(5, SparkMax.MotorType.kBrushless);
+        shooterMotor1 = new SparkMax(6, SparkMax.MotorType.kBrushless);
+        shooterMotor2 = new SparkMax(7, SparkMax.MotorType.kBrushless);
+        backMotor = new SparkMax(19, SparkMax.MotorType.kBrushless);
+        rollerMotor1 = new SparkMax(20, SparkMax.MotorType.kBrushless);
+        rollerMotor2 = new SparkMax(21, SparkMax.MotorType.kBrushless);
 
-        shooterMotor1.configure(Configs.ShooterSubsystem.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        shooterMotor2.configure(Configs.ShooterSubsystem.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        backMotor.configure(Configs.ShooterSubsystem.BACKROLLER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        shooterMotor1.configure(Configs.Shooter.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        shooterMotor2.configure(Configs.Shooter.SHOOTER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        backMotor.configure(Configs.Shooter.BACKROLLER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         rollerMotor1.configure(Configs.HopperSubsystem.INDEXER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         rollerMotor2.configure(Configs.HopperSubsystem.INDEXER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
