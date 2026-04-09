@@ -14,138 +14,155 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the
+ * name of this class or
+ * the package after creating this project, you must also update the
+ * build.gradle file in the
  * project.
  */
 public class Robot extends TimedRobot {
-  private Command m_autonomousCommand;
-  private RobotContainer m_robotContainer;
+	private Command m_autonomousCommand;
+	private RobotContainer m_robotContainer;
 
-  //Subsystems
-  private DriveSubsystem drivetrain;
+	// Subsystems
+	private DriveSubsystem drivetrain;
 
-  //PhotonVision Simulation
+	// PhotonVision Simulation
 
-  Pose2d[] gamePieces = new Pose2d[] {
-    new Pose2d(4.0, 3.0, new Rotation2d()),
-    new Pose2d(5.0, 5.0, new Rotation2d())
-  };
+	Pose2d[] gamePieces = new Pose2d[] {
+			new Pose2d(4.0, 3.0, new Rotation2d()),
+			new Pose2d(5.0, 5.0, new Rotation2d())
+	};
 
-  Field2d field = new Field2d();
+	Field2d field = new Field2d();
 
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
-  @Override
-  public void robotInit() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();  // <-- Create container
-    
-    drivetrain = m_robotContainer.getM_drive(); // <-- Get the drivetrain
+	/**
+	 * This function is run when the robot is first started up and should be used
+	 * for any
+	 * initialization code.
+	 */
+	@Override
+	public void robotInit() {
+		// Instantiate our RobotContainer. This will perform all our button bindings,
+		// and put our
+		// autonomous chooser on the dashboard.
+		m_robotContainer = new RobotContainer(); // <-- Create container
 
-    new Thread(new Runnable(){
-      @Override
-      public void run() {
-      try {
-        Thread.sleep(2000);
-        drivetrain.zeroHeading();
-        System.out.println("Gyro zeroed on startup");
-      } catch (InterruptedException e) {
-        Thread.currentThread().isInterrupted();
-      }
-    }
-    }).start();
-  }
+		drivetrain = m_robotContainer.getM_drive(); // <-- Get the drivetrain
 
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
-  @Override
-  public void robotPeriodic() {
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
-    CommandScheduler.getInstance().run();
-        drivetrain.log();
-    SmartDashboard.putNumber("Battery Voltage", edu.wpi.first.wpilibj.RobotController.getBatteryVoltage());
-  }
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(2000);
+					drivetrain.zeroHeading();
+					System.out.println("Gyro zeroed on startup");
+				} catch (InterruptedException e) {
+					Thread.currentThread().isInterrupted();
+				}
+			}
+		}).start();
+	}
 
-  @Override
-  public void simulationPeriodic() {
-    m_robotContainer.getVision().simulationPeriodic(drivetrain.getPose());
-  }
-  
-  /** This function is called once each time the robot enters Disabled mode. */
-  @Override
-  public void disabledInit() {}
+	/**
+	 * This function is called every 20 ms, no matter the mode. Use this for items
+	 * like diagnostics
+	 * that you want ran during disabled, autonomous, teleoperated and test.
+	 *
+	 * <p>
+	 * This runs after the mode specific periodic functions, but before LiveWindow
+	 * and
+	 * SmartDashboard integrated updating.
+	 */
+	@Override
+	public void robotPeriodic() {
+		// Runs the Scheduler. This is responsible for polling buttons, adding
+		// newly-scheduled
+		// commands, running already-scheduled commands, removing finished or
+		// interrupted commands,
+		// and running subsystem periodic() methods. This must be called from the
+		// robot's periodic
+		// block in order for anything in the Command-based framework to work.
+		CommandScheduler.getInstance().run();
+		drivetrain.log();
+		SmartDashboard.putNumber("Battery Voltage", edu.wpi.first.wpilibj.RobotController.getBatteryVoltage());
+	}
 
-  @Override
-  public void disabledPeriodic() {
-    drivetrain.log();
-  }
+	@Override
+	public void simulationPeriodic() {
+		m_robotContainer.getM_vision().simulationPeriodic(drivetrain.getPose());
+	}
 
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
-  @Override
-  public void autonomousInit() {
-    drivetrain.m_gyro.reset(); 
-    drivetrain.zeroHeading();
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+	/** This function is called once each time the robot enters Disabled mode. */
+	@Override
+	public void disabledInit() {
+	}
 
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    }
-  }
+	@Override
+	public void disabledPeriodic() {
+		drivetrain.log();
+	}
 
-    /*
-     * String autoSelected = SmartDashboard.getString("Auto Selector",
-     * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-     * = new MyAutoCommand(); break; case "Default Auto": default:
-     * autonomousCommand = new ExampleCommand(); break; }
-     */
+	/**
+	 * This autonomous runs the autonomous command selected by your
+	 * {@link RobotContainer} class.
+	 */
+	@Override
+	public void autonomousInit() {
+		drivetrain.m_gyro.reset();
+		drivetrain.zeroHeading();
+		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // schedule the autonomous command (example)
+		if (m_autonomousCommand != null) {
+			m_autonomousCommand.schedule();
+		}
+	}
 
-  /** This function is called periodically during autonomous. */
-  @Override
-  public void autonomousPeriodic() {}
+	/*
+	 * String autoSelected = SmartDashboard.getString("Auto Selector",
+	 * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
+	 * = new MyAutoCommand(); break; case "Default Auto": default:
+	 * autonomousCommand = new ExampleCommand(); break; }
+	 */
 
-  @Override
-  public void teleopInit(){
-    if (m_autonomousCommand !=null) {
-      m_autonomousCommand.cancel();
-    }
+	// schedule the autonomous command (example)
 
-    if (m_autonomousCommand != null) m_autonomousCommand.cancel();
-    System.out.println("NavX Connected:" + drivetrain.m_gyro.isConnected());
-    System.out.println("NavX Yaw:" + drivetrain.m_gyro.getYaw());
-  }
+	/** This function is called periodically during autonomous. */
+	@Override
+	public void autonomousPeriodic() {
+	}
 
-  @Override
-  public void testInit() {
-    // Cancels all running commands at the start of test mode.
-    CommandScheduler.getInstance().cancelAll();
-  }
+	@Override
+	public void teleopInit() {
+		if (m_autonomousCommand != null) {
+			m_autonomousCommand.cancel();
+		}
 
-  /** This function is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
+		if (m_autonomousCommand != null)
+			m_autonomousCommand.cancel();
+		System.out.println("NavX Connected:" + drivetrain.m_gyro.isConnected());
+		System.out.println("NavX Yaw:" + drivetrain.m_gyro.getYaw());
+	}
 
-  public void resetPose() {
-        // Example Only - startPose should be derived from some assumption
-        // of where your robot was placed on the field.
-        // The first pose in an autonomous path is often a good choice.
-        var startPose = new Pose2d(1, 1, new Rotation2d());
-        drivetrain.resetOdometry(startPose);
-        //visionSim.resetSimPose(startPose);
-  }
+	@Override
+	public void testInit() {
+		// Cancels all running commands at the start of test mode.
+		CommandScheduler.getInstance().cancelAll();
+	}
+
+	/** This function is called periodically during test mode. */
+	@Override
+	public void testPeriodic() {
+	}
+
+	public void resetPose() {
+		// Example Only - startPose should be derived from some assumption
+		// of where your robot was placed on the field.
+		// The first pose in an autonomous path is often a good choice.
+		var startPose = new Pose2d(1, 1, new Rotation2d());
+		drivetrain.resetOdometry(startPose);
+		// visionSim.resetSimPose(startPose);
+	}
 }
-
