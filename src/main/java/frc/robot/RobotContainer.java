@@ -42,17 +42,6 @@ public class RobotContainer {
 	// Field Relativity
 	private boolean fieldRelative = true;
 
-	// Auto stuff
-	// private final Autos autos = new Autos(drivetrain);
-	// AutoChooser.setDefaultOption("Full Auto", autos.fullAuto());
-	// AutoChooser.addOption("Simple Shoot", autos.simpleShootAuto());
-	// SmartDashboard.putData("autoChooser", autoChooser);
-
-	// Getter method
-	public XboxController getDriverController() {
-		return driverController;
-	}
-
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
 	 */
@@ -134,7 +123,7 @@ public class RobotContainer {
 
 		// A Button- Allign to Tag 25
 		new JoystickButton(driverController, XboxController.Button.kB.value)
-			.whileTrue(m_vision.alignToTag(m_drive,4));
+				.whileTrue(m_vision.alignToTag(m_drive, 4));
 	}
 
 	public void periodic() {

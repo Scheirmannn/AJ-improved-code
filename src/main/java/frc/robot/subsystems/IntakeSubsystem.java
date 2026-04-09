@@ -21,9 +21,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
 	public IntakeSubsystem() {
 
-		IntakeMotor.configure(Configs.Intake.INTAKE_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+		IntakeMotor.configure(Configs.Intake.INTAKE_CONFIG, ResetMode.kResetSafeParameters,
+				PersistMode.kPersistParameters);
 
-		PivotMotor.configure(Configs.Intake.PIVOT_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+		PivotMotor.configure(Configs.Intake.PIVOT_CONFIG, ResetMode.kResetSafeParameters,
+				PersistMode.kPersistParameters);
 
 	}
 
@@ -73,18 +75,16 @@ public class IntakeSubsystem extends SubsystemBase {
 
 	public Command fullRunUpCommand() {
 		return Commands.sequence(
-			runUpCommand(),
-			Commands.waitSeconds(.25),
-			runStopCommand()
-		);
+				runUpCommand(),
+				Commands.waitSeconds(.25),
+				runStopCommand());
 	}
 
 	public Command fullRunDownCommand() {
 		return Commands.sequence(
-			runDownCommand(),
-			Commands.waitSeconds(.25),
-			runStopCommand()
-		);
+				runDownCommand(),
+				Commands.waitSeconds(.25),
+				runStopCommand());
 	}
 
 	public Command toggleArmCommand() {

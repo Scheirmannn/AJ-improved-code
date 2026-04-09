@@ -1,4 +1,7 @@
 {
+  "java.format.enabled": true,
+  "java.format.settings.url": "formatter.xml",
+  "java.format.settings.profile": "WPILib",
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.server.launchMode": "Standard",
   "files.exclude": {
