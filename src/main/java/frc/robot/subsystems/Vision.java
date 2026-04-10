@@ -15,14 +15,10 @@ import org.photonvision.simulation.VisionSystemSim;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.HttpCamera;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -110,45 +106,7 @@ public class Vision extends SubsystemBase {
 		EstimatedRobotPose pose = estimatedPose.get();
 		Pose2d pose2d = pose.estimatedPose.toPose2d();
 
-		SmartDashboard.putNumber("Vision/" + prefix + "/Pose X", pose2d.getX());
-		SmartDashboard.putNumber("Vision/" + prefix + "/Pose Y", pose2d.getY());
-		SmartDashboard.putNumber("Vision/" + prefix + "/Timestamp", pose.timestampSeconds);
-
-		Matrix<N3, N1> stdDevs = computeStdDevs(pose, estimator);
-		SmartDashboard.putString("Vision/" + prefix + "/Std Devs",
-				String.format("[%.2f, %.2f, %.2f]",
-						stdDevs.get(0, 0), stdDevs.get(1, 0), stdDevs.get(2, 0)));
-
 		poseConsumer.accept(pose2d, pose.timestampSeconds);
-	}
-
-	private Matrix<N3, N1> computeStdDevs(EstimatedRobotPose estimatedPose, PhotonPoseEstimator estimator) {
-		Matrix<N3, N1> estStdDevs = Constants.Vision.kSingleTagStdDevs;
-		int numTags = estimatedPose.targetsUsed.size();
-		double avgDist = 0;
-
-		for (var target : estimatedPose.targetsUsed) {
-			var tagPose = estimator.getFieldTags().getTagPose(target.getFiducialId());
-			if (tagPose.isPresent()) {
-				avgDist += tagPose.get().toPose2d().getTranslation()
-						.getDistance(estimatedPose.estimatedPose.toPose2d().getTranslation());
-			}
-		}
-
-		if (numTags > 0)
-			avgDist /= numTags;
-
-		if (numTags > 1) {
-			estStdDevs = Constants.Vision.kMultiTagStdDevs;
-		}
-
-		if (numTags == 1 && avgDist > 4) {
-			estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-		} else {
-			estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-		}
-
-		return estStdDevs;
 	}
 
 	// -------------------------------------------------------------------------
@@ -168,9 +126,9 @@ public class Vision extends SubsystemBase {
 								-0.5, 0.5), true),
 						drivetrain::stopModules),
 				() -> {
-					drivetrain.stopModules();
+					drivetrain.setX();
 					yaw.close();
-				}).withName("AlignToTag");
+				}).until(yaw::atSetpoint).withName("AlignToTag");
 	}
 
 	private Optional<AlignTarget> findAlignTarget(int... tagIds) {

@@ -22,11 +22,9 @@ public class StationaryShoot extends Command {
     @Override
     public void initialize() {
         m_autoSequence = Commands.sequence(
-            m_shooter.fullShootCommand(3800.0, 4600.0).withTimeout(15)
-            
-            );
-        
-            CommandScheduler.getInstance().schedule(m_autoSequence);
+                m_shooter.fullShootCommand(3800.0, 4600.0).withTimeout(15));
+
+        CommandScheduler.getInstance().schedule(m_autoSequence);
     }
 
     @Override

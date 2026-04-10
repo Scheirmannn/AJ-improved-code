@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
+import frc.robot.autos.GoBackTime;
 import frc.robot.autos.StationaryShoot;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,7 +49,8 @@ public class RobotContainer {
 	public RobotContainer() {
 		m_shooter.useVision(m_vision);
 		// CONFIGURE AUTO CHOOSER
-		autoChooser.setDefaultOption("New Path Auto", new StationaryShoot(m_drive, m_shooter));
+		autoChooser.setDefaultOption("Go Back Time", GoBackTime.get(m_drive, m_shooter));
+		autoChooser.addOption("Stationary Shoot", new StationaryShoot(m_drive, m_shooter));
 		autoChooser.addOption("Do Nothing", Commands.none());
 
 		// Configure the button bindings
@@ -122,8 +124,8 @@ public class RobotContainer {
 				.whileTrue(new RunCommand(() -> m_drive.setX(), m_drive));
 
 		// A Button- Allign to Tag 25
-		new JoystickButton(driverController, XboxController.Button.kB.value)
-				.whileTrue(m_vision.alignToTag(m_drive, 4));
+		new JoystickButton(driverController, XboxController.Button.kX.value)
+				.onTrue(m_vision.alignToTag(m_drive, 25));
 	}
 
 	public void periodic() {
