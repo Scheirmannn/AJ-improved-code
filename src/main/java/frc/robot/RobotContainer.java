@@ -125,7 +125,7 @@ public class RobotContainer {
 
 		// A Button- Allign to Tag 25
 		new JoystickButton(driverController, XboxController.Button.kX.value)
-				.onTrue(m_vision.alignToTag(m_drive, 25));
+				.whileTrue(m_vision.alignToTag(m_drive, 10));
 	}
 
 	public void periodic() {

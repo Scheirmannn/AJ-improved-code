@@ -121,14 +121,19 @@ public class Vision extends SubsystemBase {
 
 		return this.runEnd(
 				() -> findAlignTarget(tagIds).ifPresentOrElse(
-						t -> drivetrain.drive(0, 0, MathUtil.clamp(
-								yaw.calculate(t.yaw(), 0) / Constants.DriveConstants.kMaxAngularSpeed,
-								-0.5, 0.5), true),
+						t -> {
+							double offset = t.cameraName().equals(Constants.Vision.kFrontRightCameraName)
+									? 11.0
+									: -11.0;
+							drivetrain.drive(0, 0, MathUtil.clamp(
+									yaw.calculate(t.yaw() - offset, 0) / Constants.DriveConstants.kMaxAngularSpeed,
+									-0.5, 0.5), true);
+						},
 						drivetrain::stopModules),
 				() -> {
-					drivetrain.setX();
+					drivetrain.stopModules();
 					yaw.close();
-				}).until(yaw::atSetpoint).withName("AlignToTag");
+				}).withName("AlignToTag");
 	}
 
 	private Optional<AlignTarget> findAlignTarget(int... tagIds) {
