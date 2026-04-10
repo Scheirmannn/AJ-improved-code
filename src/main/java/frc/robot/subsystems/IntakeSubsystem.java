@@ -29,7 +29,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
 	}
 
-	public boolean m_up = true;
+	private boolean m_up = true;
 
 	// Set the intake motor power in the range of [-1, 1]
 	private void setIntakePower(double power) {

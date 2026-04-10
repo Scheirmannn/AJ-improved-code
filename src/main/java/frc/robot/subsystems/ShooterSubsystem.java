@@ -78,7 +78,7 @@ public class ShooterSubsystem extends SubsystemBase {
 				PersistMode.kPersistParameters);
 
 		shooterEncoder1 = shooterMotor1.getEncoder();
-		shooterEncoder2 = shooterMotor1.getEncoder();
+		shooterEncoder2 = shooterMotor2.getEncoder();
 
 		SmartDashboard.putBoolean("Shooter at Speed", false);
 	}
@@ -139,8 +139,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	// shooter velo methods to work with roller wait
 	public double getShooterVelocity() {
-		double RPM = (Math.abs(shooterEncoder1.getVelocity()) + Math.abs(shooterEncoder2.getVelocity()));
-
+		double RPM = (Math.abs(shooterEncoder1.getVelocity()) + Math.abs(shooterEncoder2.getVelocity())) / (2.0);
 		return RPM;
 	}
 
