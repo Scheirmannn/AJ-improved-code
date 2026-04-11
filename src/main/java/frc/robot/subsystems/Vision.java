@@ -120,20 +120,27 @@ public class Vision extends SubsystemBase {
 		yaw.setTolerance(Constants.Vision.kAlignToleranceDeg);
 
 		return this.runEnd(
-				() -> findAlignTarget(tagIds).ifPresentOrElse(
-						t -> {
-							double offset = t.cameraName().equals(Constants.Vision.kFrontRightCameraName)
-									? 11.0
-									: -11.0;
-							drivetrain.drive(0, 0, MathUtil.clamp(
-									yaw.calculate(t.yaw() - offset, 0) / Constants.DriveConstants.kMaxAngularSpeed,
-									-0.5, 0.5), true);
-						},
-						drivetrain::stopModules),
+				() -> {
+					if (yaw.atSetpoint()) {
+						drivetrain.setX();
+						return;
+					}
+					findAlignTarget(tagIds).ifPresentOrElse(
+							t -> {
+								double offset = t.cameraName().equals(Constants.Vision.kFrontRightCameraName)
+										? 11.0
+										: -11.0;
+								drivetrain.drive(0, 0, MathUtil.clamp(
+										yaw.calculate(t.yaw() - offset, 0) / Constants.DriveConstants.kMaxAngularSpeed,
+										-0.5, 0.5), true);
+							},
+							drivetrain::stopModules);
+				},
 				() -> {
 					drivetrain.stopModules();
 					yaw.close();
-				}).withName("AlignToTag");
+				})
+				.withName("AlignToTag");
 	}
 
 	private Optional<AlignTarget> findAlignTarget(int... tagIds) {

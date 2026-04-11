@@ -49,7 +49,6 @@ public class DriveSubsystem extends SubsystemBase {
 
 	private double m_simGyroAngle = 0.0;
 	private ChassisSpeeds m_lastChassisSpeeds = new ChassisSpeeds();
-	private boolean m_xLocked = false;
 
 	private final PIDController xController = new PIDController(8.0, 0.0, 0.0);
 	private final PIDController yController = new PIDController(8.0, 0, 0);
@@ -194,16 +193,6 @@ public class DriveSubsystem extends SubsystemBase {
 		double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
 		double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
 
-		// Clear X lock if driver provides any input
-		if (Math.abs(xSpeedDelivered) > 0.1 || Math.abs(ySpeedDelivered) > 0.1 || Math.abs(rotDelivered) > 0.1) {
-			m_xLocked = false;
-		}
-
-		if (m_xLocked) {
-			setX();
-			return;
-		}
-
 		if (fieldRelative) {
 			m_lastChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
 					xSpeedDelivered, ySpeedDelivered, rotDelivered,
@@ -222,7 +211,6 @@ public class DriveSubsystem extends SubsystemBase {
 	}
 
 	public void setX() {
-		m_xLocked = true;
 		m_frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
 		m_frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
 		m_rearLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));

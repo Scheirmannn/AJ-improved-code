@@ -96,7 +96,6 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void disabledPeriodic() {
-		drivetrain.log();
 	}
 
 	/**
@@ -133,9 +132,6 @@ public class Robot extends TimedRobot {
 		if (m_autonomousCommand != null) {
 			m_autonomousCommand.cancel();
 		}
-
-		if (m_autonomousCommand != null)
-			m_autonomousCommand.cancel();
 		System.out.println("NavX Connected:" + drivetrain.m_gyro.isConnected());
 		System.out.println("NavX Yaw:" + drivetrain.m_gyro.getYaw());
 	}

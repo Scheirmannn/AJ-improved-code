@@ -28,7 +28,7 @@ import frc.robot.subsystems.Vision;
 public class RobotContainer {
 	// The robot's subsystems
 	private final DriveSubsystem m_drive = new DriveSubsystem();
-	private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+	private final IntakeSubsystem m_intake = new IntakeSubsystem();
 	private final Vision m_vision = new Vision(m_drive::addVisionMeasurement);
 	private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 
@@ -103,19 +103,28 @@ public class RobotContainer {
 		SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
 
 		new Trigger(() -> driverController.getLeftTriggerAxis() > 0.1)
-				.whileTrue(intakeSubsystem.runIntakeCommand());
+				.whileTrue(m_intake.runIntakeCommand(3000))
+				.onFalse(m_intake.stopIntakeCommand());
 
 		new Trigger(() -> driverController.getRightTriggerAxis() > 0.1)
 				.whileTrue(m_shooter.fullShootVisionCommand())
 				.onFalse(m_shooter.fullStopCommand());
 
 		new JoystickButton(driverController, XboxController.Button.kLeftBumper.value)
-				.onTrue(intakeSubsystem.toggleArmCommand())
-				.onFalse(intakeSubsystem.runStopCommand());
+				.onTrue(m_intake.toggleArmCommand())
+				.onFalse(m_intake.runStopCommand());
 
 		new JoystickButton(driverController, XboxController.Button.kRightBumper.value)
 				.whileTrue(m_shooter.fullShootCommand(3000, 4000))
 				.onFalse(m_shooter.fullStopCommand());
+
+		new Trigger(() -> driverController.getPOV() == 0)
+				.onTrue(m_intake.runUpCommand())
+				.onFalse(m_intake.runStopCommand());
+
+		new Trigger(() -> driverController.getPOV() == 180)
+				.onTrue(m_intake.runDownCommand())
+				.onFalse(m_intake.runStopCommand());
 
 		new JoystickButton(driverController, XboxController.Button.kY.value)
 				.onTrue(new InstantCommand(() -> m_drive.zeroHeading()));

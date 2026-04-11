@@ -66,6 +66,10 @@ public final class Configs {
 					.idleMode(IdleMode.kCoast)
 					.openLoopRampRate(.5)
 					.smartCurrentLimit(30);
+			INTAKE_CONFIG.closedLoop
+					.feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+					.pid(.00005, 0, 0)
+					.outputRange(-1, 1).feedForward.kV(12.0 / UtilityConstants.kVortexFreeSpeedRpm);
 
 			double pivotDegreesPerRotation = 360;
 
@@ -104,7 +108,7 @@ public final class Configs {
 					.outputRange(-1, 1).feedForward.kV(12.0 / UtilityConstants.kVortexFreeSpeedRpm);
 
 			BACKROLLER_CONFIG
-					.inverted(false)
+					.inverted(true)
 					.idleMode(IdleMode.kCoast)
 					.smartCurrentLimit(40);
 			BACKROLLER_CONFIG.encoder
@@ -112,7 +116,7 @@ public final class Configs {
 			BACKROLLER_CONFIG.closedLoop
 					.feedbackSensor(FeedbackSensor.kPrimaryEncoder)
 					.pid(.00005, 0, 0)
-					.outputRange(-1, 1).feedForward.kV(1 / UtilityConstants.kVortexFreeSpeedRps / 60);
+					.outputRange(-1, 1).feedForward.kV(12.0 / UtilityConstants.kVortexFreeSpeedRpm);
 		}
 	}
 
@@ -129,8 +133,7 @@ public final class Configs {
 			INDEXER_CONFIG.closedLoop
 					.feedbackSensor(FeedbackSensor.kPrimaryEncoder)
 					.pid(.00005, 0, 0)
-					.outputRange(-1, 1)
-					.feedForward.kV(12.0 / UtilityConstants.kVortexFreeSpeedRpm);
+					.outputRange(-1, 1).feedForward.kV(12.0 / UtilityConstants.kVortexFreeSpeedRpm);
 		}
 	}
 

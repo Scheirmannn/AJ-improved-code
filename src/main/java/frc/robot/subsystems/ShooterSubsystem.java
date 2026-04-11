@@ -84,52 +84,25 @@ public class ShooterSubsystem extends SubsystemBase {
 	}
 
 	// Moved distance calcs to outside the shootCommand
-	public double desiredShooterRPM(DoubleSupplier distanceMeters) {
-		double dist = distanceMeters.getAsDouble();
-
-		// Clamp distance to table bouds so it doesnt extrapolate wildly
-		dist = Math.max(1.0, Math.min(5.0, dist));
-
-		// Shot selection label for dashboard
-		String shotLabel;
-		if (dist < 1.7) {
-			shotLabel = "Close";
-		} else if (dist < 2.7) {
-			shotLabel = "Mid-Close";
-		} else if (dist < 3.5) {
-			shotLabel = "Mid";
-		} else if (dist < 4.5) {
-			shotLabel = "Mid-Far";
-		} else {
-			shotLabel = "Far";
-		}
-		SmartDashboard.putString("Shot Selection", shotLabel);
-
-		return shooterRPMMap.get(dist);
+	public record ShooterSetpoint(double shooterRPM, double backRPM) {
 	}
 
-	public double desiredBackRPM(DoubleSupplier distanceMeters) {
-		double dist = distanceMeters.getAsDouble();
+	private String getShotLabel(double dist) {
+		if (dist < 1.7)
+			return "Close";
+		if (dist < 2.7)
+			return "Mid-Close";
+		if (dist < 3.5)
+			return "Mid";
+		if (dist < 4.5)
+			return "Mid-Far";
+		return "Far";
+	}
 
-		// Clamp distance to table bouds so it doesnt extrapolate wildly
-		dist = Math.max(1.0, Math.min(5.0, dist));
-
-		// Shot selection label for dashboard
-		String shotLabel;
-		if (dist < 1.7) {
-			shotLabel = "Close";
-		} else if (dist < 2.7) {
-			shotLabel = "Mid-Close";
-		} else if (dist < 3.5) {
-			shotLabel = "Mid";
-		} else if (dist < 4.5) {
-			shotLabel = "Mid-Far";
-		} else {
-			shotLabel = "Far";
-		}
-		SmartDashboard.putString("Shot Selection", shotLabel);
-
-		return backrollerRPMMap.get(dist);
+	public ShooterSetpoint getSetpoint(double distanceMeters) {
+		double dist = Math.max(1.0, Math.min(3.0, distanceMeters));
+		SmartDashboard.putString("Shot Selection", getShotLabel(dist));
+		return new ShooterSetpoint(shooterRPMMap.get(dist), backrollerRPMMap.get(dist));
 	}
 
 	// added vision setter for shooter
@@ -148,7 +121,10 @@ public class ShooterSubsystem extends SubsystemBase {
 	}
 
 	public boolean isAtVisionSpeed() {
-		return getShooterVelocity() >= (desiredShooterRPM(() -> m_vision.getHubDistance()) * 0.95);
+		double dist = m_vision.getHubDistance();
+		if (dist < 0)
+			return false;
+		return getShooterVelocity() >= getSetpoint(dist).shooterRPM() * 0.95;
 	}
 
 	public boolean isShooterRunning() {
@@ -184,16 +160,18 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	public Command shootVisionCommand(DoubleSupplier distanceMeters) {
 		return new RunCommand(() -> {
-			double shooterRPM = desiredShooterRPM(distanceMeters);
-			double backRPM = desiredBackRPM(distanceMeters);
+			double dist = distanceMeters.getAsDouble();
+			if (dist < 0)
+				return;
 
-			setShooterVelo(shooterRPM);
-			setBackVelo(backRPM);
+			ShooterSetpoint setpoint = getSetpoint(dist);
+			setShooterVelo(setpoint.shooterRPM());
+			setBackVelo(setpoint.backRPM());
 
-			SmartDashboard.putNumber("Shooter/Distance (m)", distanceMeters.getAsDouble());
-			SmartDashboard.putNumber("Shooter/Flywheel RPM", shooterRPM);
-			SmartDashboard.putNumber("Shooter/Backroller RPM", backRPM);
-		});
+			SmartDashboard.putNumber("Shooter/Distance (m)", dist);
+			SmartDashboard.putNumber("Shooter/Flywheel RPM", setpoint.shooterRPM());
+			SmartDashboard.putNumber("Shooter/Backroller RPM", setpoint.backRPM());
+		}, this);
 	}
 
 	public Command rollerStartCommand() {
@@ -204,7 +182,7 @@ public class ShooterSubsystem extends SubsystemBase {
 		return new InstantCommand(() -> setRollerVelo(-3000), this);
 	}
 
-	public Command rollerWaitommand(double shooterRPM) {
+	public Command rollerWaitCommand(double shooterRPM) {
 		return Commands.sequence(
 				Commands.waitUntil(() -> isAtSpeed(shooterRPM)),
 				Commands.waitSeconds(0.5),
@@ -229,7 +207,7 @@ public class ShooterSubsystem extends SubsystemBase {
 	public Command fullShootCommand(double shooterRPM, double backRPM) {
 		return Commands.parallel(
 				shootCommand(shooterRPM, backRPM),
-				rollerWaitommand(shooterRPM));
+				rollerWaitCommand(shooterRPM));
 	}
 
 	public Command fullShootVisionCommand() {
