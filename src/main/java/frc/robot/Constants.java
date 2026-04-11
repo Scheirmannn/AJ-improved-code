@@ -103,6 +103,9 @@ public final class Constants {
 		// (Fake values. Experiment and determine estimation noise on an actual robot.)
 		public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
 		public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+
+		public static final int[] redTags = { 10, 11, 8 };
+		public static final int[] blueTags = { 25, 24, 27 };
 	}
 
 	public static final class DriveConstants {

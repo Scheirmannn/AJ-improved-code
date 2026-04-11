@@ -8,6 +8,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -134,7 +135,10 @@ public class RobotContainer {
 
 		// A Button- Allign to Tag 25
 		new JoystickButton(driverController, XboxController.Button.kX.value)
-				.whileTrue(m_vision.alignToTag(m_drive, 10));
+				.whileTrue(m_vision.alignToTag(m_drive, driverController,
+						Alliance.Red == DriverStation.getAlliance().orElse(Alliance.Red)
+								? frc.robot.Constants.Vision.redTags
+								: frc.robot.Constants.Vision.blueTags));
 	}
 
 	public void periodic() {

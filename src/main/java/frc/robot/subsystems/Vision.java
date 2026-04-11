@@ -19,6 +19,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -112,7 +113,7 @@ public class Vision extends SubsystemBase {
 	// -------------------------------------------------------------------------
 	// Align to tag
 	// -------------------------------------------------------------------------
-	public Command alignToTag(DriveSubsystem drivetrain, int... tagIds) {
+	public Command alignToTag(DriveSubsystem drivetrain, XboxController controller, int... tagIds) {
 		PIDController yaw = new PIDController(
 				Constants.Vision.kAlignP,
 				Constants.Vision.kAlignI,
@@ -121,20 +122,22 @@ public class Vision extends SubsystemBase {
 
 		return this.runEnd(
 				() -> {
-					if (yaw.atSetpoint()) {
-						drivetrain.setX();
-						return;
-					}
+					double xSpeed = -MathUtil.applyDeadband(
+							controller.getLeftY(), Constants.OIConstants.kDriveDeadband);
+					double ySpeed = -MathUtil.applyDeadband(
+							controller.getLeftX(), Constants.OIConstants.kDriveDeadband);
+
 					findAlignTarget(tagIds).ifPresentOrElse(
 							t -> {
 								double offset = t.cameraName().equals(Constants.Vision.kFrontRightCameraName)
 										? 11.0
 										: -11.0;
-								drivetrain.drive(0, 0, MathUtil.clamp(
+								double rot = MathUtil.clamp(
 										yaw.calculate(t.yaw() - offset, 0) / Constants.DriveConstants.kMaxAngularSpeed,
-										-0.5, 0.5), true);
+										-0.5, 0.5);
+								drivetrain.drive(xSpeed, ySpeed, rot, true);
 							},
-							drivetrain::stopModules);
+							() -> drivetrain.drive(xSpeed, ySpeed, 0, true));
 				},
 				() -> {
 					drivetrain.stopModules();
