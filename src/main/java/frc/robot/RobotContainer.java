@@ -51,7 +51,7 @@ public class RobotContainer {
 		m_shooter.useVision(m_vision);
 		// CONFIGURE AUTO CHOOSER
 		autoChooser.setDefaultOption("Go Back Time", GoBackTime.get(m_drive, m_shooter));
-		autoChooser.addOption("Stationary Shoot", new StationaryShoot(m_drive, m_shooter));
+		autoChooser.addOption("Stationary Shoot", StationaryShoot.get(m_shooter));
 		autoChooser.addOption("Do Nothing", Commands.none());
 
 		// Configure the button bindings
