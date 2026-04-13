@@ -13,11 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
-import frc.robot.autos.GoBackTime;
-import frc.robot.autos.StationaryShoot;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -50,9 +47,9 @@ public class RobotContainer {
 	public RobotContainer() {
 		m_shooter.useVision(m_vision);
 		// CONFIGURE AUTO CHOOSER
-		autoChooser.setDefaultOption("Go Back Time", GoBackTime.get(m_drive, m_shooter));
-		autoChooser.addOption("Stationary Shoot", StationaryShoot.get(m_shooter));
-		autoChooser.addOption("Do Nothing", Commands.none());
+		autoChooser.setDefaultOption("Go Back Time", Autos.goBackTime(m_drive, m_shooter));
+		autoChooser.addOption("Stationary Shoot", Autos.stationaryShoot(m_shooter));
+		autoChooser.addOption("Do Nothing", Autos.doNothing());
 
 		// Configure the button bindings
 		configureButtonBindings(
