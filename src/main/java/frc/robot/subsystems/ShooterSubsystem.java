@@ -175,7 +175,7 @@ public class ShooterSubsystem extends SubsystemBase {
 	}
 
 	public Command rollerStartCommand() {
-		return new InstantCommand(() -> setRollerVelo(3000), this);
+		return new InstantCommand(() -> setRollerVelo(3000));
 	}
 
 	public Command rollerReverseCommand() {

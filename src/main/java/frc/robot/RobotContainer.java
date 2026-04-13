@@ -101,16 +101,18 @@ public class RobotContainer {
 		SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
 
 		new Trigger(() -> driverController.getLeftTriggerAxis() > 0.1)
-				.whileTrue(m_intake.runIntakeCommand(3000))
-				.onFalse(m_intake.stopIntakeCommand());
+				.whileTrue(m_vision.alignToTag(m_drive, driverController,
+						Alliance.Red == DriverStation.getAlliance().orElse(Alliance.Red)
+								? frc.robot.Constants.Vision.redTags
+								: frc.robot.Constants.Vision.blueTags));
 
 		new Trigger(() -> driverController.getRightTriggerAxis() > 0.1)
 				.whileTrue(m_shooter.fullShootVisionCommand())
 				.onFalse(m_shooter.fullStopCommand());
 
 		new JoystickButton(driverController, XboxController.Button.kLeftBumper.value)
-				.onTrue(m_intake.toggleArmCommand())
-				.onFalse(m_intake.runStopCommand());
+				.onTrue(m_intake.runIntakeCommand(3000))
+				.onFalse(m_intake.stopIntakeCommand());
 
 		new JoystickButton(driverController, XboxController.Button.kRightBumper.value)
 				.whileTrue(m_shooter.fullShootCommand(3000, 4000))

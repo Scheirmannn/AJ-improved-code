@@ -130,8 +130,8 @@ public class Vision extends SubsystemBase {
 					findAlignTarget(tagIds).ifPresentOrElse(
 							t -> {
 								double offset = t.cameraName().equals(Constants.Vision.kFrontRightCameraName)
-										? 11.0
-										: -11.0;
+										? -11.0
+										: 11.0;
 								double rot = MathUtil.clamp(
 										yaw.calculate(t.yaw() - offset, 0) / Constants.DriveConstants.kMaxAngularSpeed,
 										-0.5, 0.5);

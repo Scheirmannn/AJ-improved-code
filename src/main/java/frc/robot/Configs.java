@@ -62,7 +62,7 @@ public final class Configs {
 
 		static {
 			INTAKE_CONFIG
-					.inverted(false)
+					.inverted(true)
 					.idleMode(IdleMode.kCoast)
 					.openLoopRampRate(.5)
 					.smartCurrentLimit(30);
@@ -75,7 +75,7 @@ public final class Configs {
 
 			PIVOT_CONFIG
 					.inverted(false)
-					.idleMode(IdleMode.kBrake)
+					.idleMode(IdleMode.kCoast)
 					.smartCurrentLimit(30);
 			PIVOT_CONFIG.absoluteEncoder
 					.positionConversionFactor(pivotDegreesPerRotation)

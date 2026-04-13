@@ -118,7 +118,7 @@ public class DriveSubsystem extends SubsystemBase {
 		if (RobotBase.isSimulation()) {
 			return m_simGyroAngle;
 		} else {
-			return -m_gyro.getYaw();
+			return m_gyro.getYaw();
 		}
 	}
 
@@ -196,7 +196,7 @@ public class DriveSubsystem extends SubsystemBase {
 		if (fieldRelative) {
 			m_lastChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
 					xSpeedDelivered, ySpeedDelivered, rotDelivered,
-					Rotation2d.fromDegrees(getGyroAngle()));
+					Rotation2d.fromDegrees(getGyroAngle() + 180.0));
 		} else {
 			m_lastChassisSpeeds = new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered);
 		}
