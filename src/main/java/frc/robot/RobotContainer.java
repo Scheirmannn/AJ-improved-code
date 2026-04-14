@@ -48,6 +48,7 @@ public class RobotContainer {
 		m_shooter.useVision(m_vision);
 		// CONFIGURE AUTO CHOOSER
 		autoChooser.setDefaultOption("Go Back Time", Autos.goBackTime(m_drive, m_shooter));
+		autoChooser.addOption("followChoreo", Autos.followChoreoTrajectory(m_drive, "Driveback_1m"));
 		autoChooser.addOption("Stationary Shoot", Autos.stationaryShoot(m_shooter));
 		autoChooser.addOption("Do Nothing", Autos.doNothing());
 
