@@ -33,6 +33,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	private Vision m_vision = null;
 
+	private Vision m_uhhh = null;
+
 	private static final InterpolatingDoubleTreeMap shooterRPMMap = new InterpolatingDoubleTreeMap();
 	private static final InterpolatingDoubleTreeMap backrollerRPMMap = new InterpolatingDoubleTreeMap();
 

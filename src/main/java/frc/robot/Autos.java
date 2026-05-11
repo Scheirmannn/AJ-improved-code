@@ -16,6 +16,7 @@ public final class Autos {
     private Autos() {
     }
 
+    
     private static Command buildChoreoAuto(DriveSubsystem drive, String trajectoryName) {
         Optional<Trajectory<SwerveSample>> trajectory = Choreo.loadTrajectory(trajectoryName);
 
