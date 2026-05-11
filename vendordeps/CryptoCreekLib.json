@@ -1,0 +1,20 @@
+{
+    "fileName": "CryptoCreekLib.json",
+    "name": "CryptoCreekLib",
+    "version": "1.0.0",
+    "frcYear": "2026",
+    "uuid": "ecd19949-c37c-48ef-a1c6-7883b3cbcc13",
+    "mavenUrls": [
+        "https://scheirmannn.github.io/cryptocreeklib/maven/"
+    ],
+    "jsonUrl": "https://raw.githubusercontent.com/Scheirmannn/cryptocreeklib/master/CryptoCreekLib.json",
+    "javaDependencies": [
+        {
+            "groupId": "cryptocreeklib",
+            "artifactId": "cryptocreeklib",
+            "version": "1.0.0"
+        }
+    ],
+    "jniDependencies": [],
+    "cppDependencies": []
+}
